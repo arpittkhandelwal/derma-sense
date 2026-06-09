@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Camera, Brain, Sparkles, ChevronRight, ActivitySquare, Droplets, Sun, Wind, Heart, Smile, Flower2, Stethoscope, Mail, Lock, ArrowLeft } from 'lucide-react';
 import { auth } from './firebase';
-import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import './index.css';
 import Dashboard from './components/Dashboard';
 import FaceScanCamera from './components/FaceScanCamera';
@@ -312,7 +312,15 @@ function App() {
             <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
               <a href="#" style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-muted)', transition: 'color 0.2s' }} onMouseOver={e=>e.target.style.color='var(--primary-royal-purple)'} onMouseOut={e=>e.target.style.color='var(--text-muted)'}>Clinical Science</a>
               <a href="#" style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-muted)', transition: 'color 0.2s' }} onMouseOver={e=>e.target.style.color='var(--primary-royal-purple)'} onMouseOut={e=>e.target.style.color='var(--text-muted)'}>Real Results</a>
-              <button className="btn-primary" style={{ padding: '10px 28px', fontSize: '0.95rem', borderRadius: '100px' }} onClick={() => setCurrentView('signin')}>Access App</button>
+              
+              {user ? (
+                 <>
+                   <button onClick={() => { signOut(auth); setCurrentView('landing'); }} style={{ padding: '10px 20px', background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--text-muted)', borderRadius: '100px', cursor: 'pointer', fontWeight: 600 }}>Sign Out</button>
+                   <button className="btn-primary" style={{ padding: '10px 28px', fontSize: '0.95rem', borderRadius: '100px' }} onClick={() => setCurrentView('facescan')}>Go to Dashboard</button>
+                 </>
+              ) : (
+                 <button className="btn-primary" style={{ padding: '10px 28px', fontSize: '0.95rem', borderRadius: '100px' }} onClick={() => setCurrentView('signin')}>Access App</button>
+              )}
             </div>
           </nav>
 
