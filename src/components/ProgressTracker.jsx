@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, Camera, Check, Clock, Sunrise, Moon, ArrowLeft, RefreshCw, Sparkles, Activity, ShieldAlert, Crosshair } from 'lucide-react';
+import { db } from '../firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
-const ProgressTracker = () => {
+const ProgressTracker = ({ user }) => {
   const [currentDate, setCurrentDate] = useState(new Date().toISOString().split('T')[0]);
   const [routineState, setRoutineState] = useState({
     am: { cleanser: false, vitaminC: false, moisturizer: false, sunscreen: false },
@@ -13,22 +15,53 @@ const ProgressTracker = () => {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
 
-  useEffect(() => {
-    const savedLog = localStorage.getItem('dermaSense_photoLog');
-    if (savedLog) setPhotoLog(JSON.parse(savedLog));
+  const getPastDates = () => {
+    const dates = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      dates.push(d.toISOString().split('T')[0]);
+    }
+    return dates;
+  };
 
-    const savedRoutine = localStorage.getItem(`dermaSense_routine_${currentDate}`);
-    if (savedRoutine) {
-        setRoutineState(JSON.parse(savedRoutine));
-    } else {
-        setRoutineState({
+  useEffect(() => {
+    const fetchFirestoreData = async () => {
+      if (!user) return;
+      const dates = getPastDates();
+      const loadedPhotos = {};
+      let foundTodayRoutine = false;
+
+      for (const d of dates) {
+        try {
+          const docRef = doc(db, 'users', user.uid, 'logs', d);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data.photo) loadedPhotos[d] = data.photo;
+            if (d === currentDate && data.routineState) {
+              setRoutineState(data.routineState);
+              foundTodayRoutine = true;
+            }
+          }
+        } catch (e) {
+          console.error("Firestore read error:", e);
+        }
+      }
+
+      setPhotoLog(loadedPhotos);
+      if (!foundTodayRoutine) {
+         setRoutineState({
             am: { cleanser: false, vitaminC: false, moisturizer: false, sunscreen: false },
             pm: { doubleCleanse: false, retinol: false, nightCream: false }
-        });
-    }
-  }, [currentDate]);
+         });
+      }
+    };
 
-  const toggleRoutine = (time, step) => {
+    fetchFirestoreData();
+  }, [currentDate, user]);
+
+  const toggleRoutine = async (time, step) => {
     const newState = {
       ...routineState,
       [time]: {
@@ -37,7 +70,15 @@ const ProgressTracker = () => {
       }
     };
     setRoutineState(newState);
-    localStorage.setItem(`dermaSense_routine_${currentDate}`, JSON.stringify(newState));
+    if (user) {
+      try {
+        await setDoc(doc(db, 'users', user.uid, 'logs', currentDate), {
+          routineState: newState
+        }, { merge: true });
+      } catch (e) {
+        console.error("Error saving routine:", e);
+      }
+    }
   };
 
   const startCamera = async () => {
@@ -56,7 +97,7 @@ const ProgressTracker = () => {
     }
   };
 
-  const capturePhoto = () => {
+  const capturePhoto = async () => {
     if (!videoRef.current) return;
     const canvas = document.createElement('canvas');
     canvas.width = videoRef.current.videoWidth;
@@ -72,7 +113,15 @@ const ProgressTracker = () => {
 
     const newLog = { ...photoLog, [currentDate]: dataUrl };
     setPhotoLog(newLog);
-    localStorage.setItem('dermaSense_photoLog', JSON.stringify(newLog));
+    if (user) {
+      try {
+        await setDoc(doc(db, 'users', user.uid, 'logs', currentDate), {
+          photo: dataUrl
+        }, { merge: true });
+      } catch (e) {
+        console.error("Error saving photo:", e);
+      }
+    }
   };
 
   const cancelCamera = () => {
@@ -82,15 +131,7 @@ const ProgressTracker = () => {
     setIsCameraActive(false);
   };
 
-  const getPastDates = () => {
-    const dates = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      dates.push(d.toISOString().split('T')[0]);
-    }
-    return dates;
-  };
+
 
   const getYesterdayStr = () => {
       const d = new Date(currentDate);
@@ -262,7 +303,7 @@ const ProgressTracker = () => {
                   <Crosshair size={28} color="#FF4081" /> Daily Scan Log
                 </h2>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'white', padding: '8px 16px', borderRadius: '100px', fontSize: '0.85rem', fontWeight: 700, color: '#64748B' }}>
-                    <ShieldAlert size={16} color="#00C853" /> Encrypted Local Storage
+                    <ShieldAlert size={16} color="#00C853" /> Firebase Cloud Sync Active
                 </div>
              </div>
 

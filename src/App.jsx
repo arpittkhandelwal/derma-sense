@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Camera, Brain, Sparkles, ChevronRight, ActivitySquare, Droplets, Sun, Wind, Heart, Smile, Flower2, Stethoscope, Mail, Lock, ArrowLeft } from 'lucide-react';
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
-import { jwtDecode } from 'jwt-decode';
+import { auth } from './firebase';
+import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import './index.css';
 import Dashboard from './components/Dashboard';
 import FaceScanCamera from './components/FaceScanCamera';
@@ -168,15 +168,40 @@ function FeaturesSection() {
 }
 
 function SignInContent({ onBack, onSignIn }) {
-  const handleGoogleSuccess = (credentialResponse) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
+
+  const handleGoogleSuccess = async () => {
     try {
-      const decoded = jwtDecode(credentialResponse.credential);
-      console.log('Google Auth Success:', decoded);
-      onSignIn({ email: decoded.email, name: decoded.name, picture: decoded.picture });
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      onSignIn({ 
+        uid: result.user.uid,
+        email: result.user.email, 
+        name: result.user.displayName, 
+        picture: result.user.photoURL 
+      });
     } catch (err) {
-      console.error('Failed to decode JWT', err);
-      onSignIn();
+      console.error('Google Auth Failed', err);
+      setErrorMsg('Google login failed.');
     }
+  };
+
+  const handleEmailAuth = async () => {
+      try {
+          if (isSignUp) {
+              const result = await createUserWithEmailAndPassword(auth, email, password);
+              onSignIn({ uid: result.user.uid, email: result.user.email });
+          } else {
+              const result = await signInWithEmailAndPassword(auth, email, password);
+              onSignIn({ uid: result.user.uid, email: result.user.email });
+          }
+      } catch (err) {
+          console.error('Auth Error:', err);
+          setErrorMsg(err.message);
+      }
   };
 
   return (
@@ -198,21 +223,16 @@ function SignInContent({ onBack, onSignIn }) {
             <Brain size={24} color="white" />
           </div>
         </div>
-        <h2 style={{ textAlign: 'center', fontSize: '2rem', marginBottom: '8px', color: 'var(--text-main)' }}>Welcome Back</h2>
+        <h2 style={{ textAlign: 'center', fontSize: '2rem', marginBottom: '8px', color: 'var(--text-main)' }}>{isSignUp ? 'Create Account' : 'Welcome Back'}</h2>
         <p style={{ textAlign: 'center', color: 'var(--text-muted)', marginBottom: '32px', fontWeight: 500 }}>Sign in to continue to DermaSense AI</p>
 
+        {errorMsg && <p style={{ color: 'red', textAlign: 'center', fontSize: '0.85rem' }}>{errorMsg}</p>}
+
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px', width: '100%' }}>
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={() => {
-              console.error('Login Failed');
-            }}
-            useOneTap
-            shape="rectangular"
-            theme="outline"
-            size="large"
-            width="100%"
-          />
+          <button onClick={handleGoogleSuccess} style={{ width: '100%', padding: '12px', background: 'white', border: '1px solid var(--glass-border)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+             <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" width="20" alt="Google" />
+             Continue with Google
+          </button>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
@@ -226,22 +246,23 @@ function SignInContent({ onBack, onSignIn }) {
             <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '8px' }}>Email Address</label>
             <div style={{ position: 'relative' }}>
               <Mail size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
-              <input type="email" placeholder="you@example.com" style={{ width: '100%', padding: '14px 16px 14px 44px', borderRadius: '12px', border: '1px solid var(--glass-border)', background: 'white', outline: 'none', color: 'var(--text-main)', fontWeight: 500 }} />
+              <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" style={{ width: '100%', padding: '14px 16px 14px 44px', borderRadius: '12px', border: '1px solid var(--glass-border)', background: 'white', outline: 'none', color: 'var(--text-main)', fontWeight: 500 }} />
             </div>
           </div>
           <div>
             <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '8px' }}>Password</label>
             <div style={{ position: 'relative' }}>
               <Lock size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
-              <input type="password" placeholder="••••••••" style={{ width: '100%', padding: '14px 16px 14px 44px', borderRadius: '12px', border: '1px solid var(--glass-border)', background: 'white', outline: 'none', color: 'var(--text-main)', fontWeight: 500 }} />
+              <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••" style={{ width: '100%', padding: '14px 16px 14px 44px', borderRadius: '12px', border: '1px solid var(--glass-border)', background: 'white', outline: 'none', color: 'var(--text-main)', fontWeight: 500 }} />
             </div>
           </div>
         </div>
 
-        <button className="btn-primary" onClick={onSignIn} style={{ width: '100%', padding: '14px', borderRadius: '12px', fontSize: '1.05rem', fontWeight: 600, marginBottom: '24px' }}>Sign In</button>
+        <button className="btn-primary" onClick={handleEmailAuth} style={{ width: '100%', padding: '14px', borderRadius: '12px', fontSize: '1.05rem', fontWeight: 600, marginBottom: '24px' }}>{isSignUp ? 'Create Account' : 'Sign In'}</button>
 
         <p style={{ textAlign: 'center', fontSize: '0.95rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-          Don't have an account? <a href="#" style={{ color: 'var(--primary-deep-violet)', fontWeight: 700, textDecoration: 'none' }}>Create New Account</a>
+          {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
+          <span onClick={() => setIsSignUp(!isSignUp)} style={{ color: 'var(--primary-deep-violet)', fontWeight: 700, cursor: 'pointer' }}>{isSignUp ? 'Sign In' : 'Create New Account'}</span>
         </p>
 
       </div>
@@ -250,12 +271,7 @@ function SignInContent({ onBack, onSignIn }) {
 }
 
 function SignInView({ onBack, onSignIn }) {
-  // Use your real Google Client ID here
-  return (
-    <GoogleOAuthProvider clientId="87104439907-vrqjvd7hjs348gdq54okplsbtd85e3v8.apps.googleusercontent.com">
-      <SignInContent onBack={onBack} onSignIn={onSignIn} />
-    </GoogleOAuthProvider>
-  );
+  return <SignInContent onBack={onBack} onSignIn={onSignIn} />;
 }
 
 function App() {
@@ -263,7 +279,23 @@ function App() {
     if (window.location.pathname === '/progress') return 'progress';
     return 'landing';
   });
+  const [user, setUser] = useState(null);
   const [scanImages, setScanImages] = useState(null);
+
+  // Listen to Firebase Auth state globally
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((u) => {
+      if (u) {
+        setUser({ uid: u.uid, email: u.email, name: u.displayName, picture: u.photoURL });
+        if (currentView === 'signin') {
+           setCurrentView('facescan');
+        }
+      } else {
+        setUser(null);
+      }
+    });
+    return () => unsubscribe();
+  }, [currentView]);
 
   return (
     <>
@@ -377,7 +409,7 @@ function App() {
         />
       )}
       {currentView === 'progress' && (
-        <ProgressTracker />
+        <ProgressTracker user={user} />
       )}
     </>
   );
