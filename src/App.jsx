@@ -3,18 +3,21 @@ import { Camera, Brain, ActivitySquare, Droplets, Wind, Mail, Lock, ArrowLeft } 
 import { auth, db } from './firebase';
 import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import './index.css';
 import Dashboard from './components/Dashboard';
 import FaceScanCamera from './components/FaceScanCamera';
 import ProgressTracker from './components/ProgressTracker';
 import AdminPanel from './components/AdminPanel';
 import BottomNav from './components/BottomNav';
+import LandingPage from './components/LandingPage';
 
 function SignInView({ onSignIn }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
+  const navigate = useNavigate();
 
   const handleGoogleSuccess = async () => {
     try {
@@ -31,6 +34,7 @@ function SignInView({ onSignIn }) {
       };
       await setDoc(doc(db, 'users', result.user.uid), userObj, { merge: true });
       onSignIn(userObj);
+      navigate('/facescan');
     } catch (err) {
       console.error('Google Auth Failed', err);
       setErrorMsg('Google login failed.');
@@ -44,11 +48,13 @@ function SignInView({ onSignIn }) {
               const userObj = { uid: result.user.uid, email: result.user.email, name: email.split('@')[0], role: 'User', status: 'Active', lastActive: new Date().toISOString() };
               await setDoc(doc(db, 'users', result.user.uid), userObj, { merge: true });
               onSignIn(userObj);
+              navigate('/facescan');
           } else {
               const result = await signInWithEmailAndPassword(auth, email, password);
               const userObj = { uid: result.user.uid, email: result.user.email, name: email.split('@')[0], role: 'User', status: 'Active', lastActive: new Date().toISOString() };
               await setDoc(doc(db, 'users', result.user.uid), userObj, { merge: true });
               onSignIn(userObj);
+              navigate('/facescan');
           }
       } catch (err) {
           console.error('Auth Error:', err);
@@ -116,68 +122,95 @@ function SignInView({ onSignIn }) {
   );
 }
 
-function App() {
-  const [currentView, setCurrentView] = useState(() => {
-    if (window.location.pathname === '/adminmehak') return 'admin';
-    if (window.location.pathname === '/progress') return 'progress';
-    return 'signin';
-  });
+function AppContent() {
   const [user, setUser] = useState(null);
   const [scanImages, setScanImages] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const isNativeApp = window.Capacitor?.isNative;
 
   // Listen to Firebase Auth state globally
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((u) => {
       if (u) {
         setUser({ uid: u.uid, email: u.email, name: u.displayName, picture: u.photoURL });
-        if (currentView === 'signin') {
-           setCurrentView('facescan');
+        if (location.pathname === '/login' || (location.pathname === '/' && isNativeApp)) {
+           navigate('/facescan');
         }
       } else {
         setUser(null);
-        setCurrentView('signin');
+        if (location.pathname !== '/login' && location.pathname !== '/') {
+          navigate('/login');
+        }
       }
     });
     return () => unsubscribe();
-  }, [currentView]);
+  }, [navigate, location.pathname, isNativeApp]);
 
   return (
     <div className="mobile-app-wrapper">
-      {currentView === 'signin' && (
-        <SignInView onSignIn={() => setCurrentView('facescan')} />
-      )}
-      {currentView === 'facescan' && (
-        <FaceScanCamera 
-          onComplete={(images) => {
-            console.log('Captured Face Images:', images);
-            setScanImages(images);
-            setCurrentView('dashboard');
-          }} 
-          onCancel={() => setCurrentView('dashboard')} 
-        />
-      )}
-      {currentView === 'dashboard' && (
-        <Dashboard 
-          scanImages={scanImages} 
-          onGoHome={() => setCurrentView('dashboard')} 
-          onRetakeScan={() => setCurrentView('facescan')} 
-        />
-      )}
-      {currentView === 'progress' && (
-        <ProgressTracker user={user} />
-      )}
-      {currentView === 'admin' && (
-        <AdminPanel onExit={() => {
-          window.history.pushState({}, '', '/');
-          setCurrentView('dashboard');
-        }} />
-      )}
+      <Routes>
+        {/* Conditional Root Route */}
+        <Route path="/" element={
+          isNativeApp ? <Navigate to="/login" replace /> : <LandingPage user={user} />
+        } />
+
+        <Route path="/login" element={<SignInView onSignIn={setUser} />} />
+        
+        {/* Protected Routes */}
+        {user && (
+          <>
+            <Route path="/facescan" element={
+              <FaceScanCamera 
+                onComplete={(images) => {
+                  setScanImages(images);
+                  navigate('/dashboard');
+                }} 
+                onCancel={() => navigate('/dashboard')} 
+              />
+            } />
+            <Route path="/dashboard" element={
+              <Dashboard 
+                scanImages={scanImages} 
+                onGoHome={() => navigate('/dashboard')} 
+                onRetakeScan={() => navigate('/facescan')} 
+              />
+            } />
+            <Route path="/progress" element={
+              <ProgressTracker user={user} />
+            } />
+            <Route path="/adminmehak" element={
+              <AdminPanel onExit={() => navigate('/dashboard')} />
+            } />
+            <Route path="/profile" element={
+              <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+                <h2 style={{ marginBottom: '20px' }}>Profile</h2>
+                <button 
+                  className="btn-primary" 
+                  onClick={() => { signOut(auth); navigate('/login'); }}
+                >
+                  Sign Out
+                </button>
+              </div>
+            } />
+          </>
+        )}
+        
+        {/* Fallback routing */}
+        <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
+      </Routes>
       
-      {/* Only show Bottom Navigation if user is signed in */}
-      {user && currentView !== 'signin' && (
-        <BottomNav currentView={currentView} setCurrentView={setCurrentView} user={user} />
-      )}
+      <BottomNav user={user} />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
   );
 }
 

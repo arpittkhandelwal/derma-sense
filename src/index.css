@@ -49,7 +49,7 @@
 body {
   margin: 0;
   font-family: var(--font-body);
-  background-color: #E2E8F0; /* Grey background for desktop web preview */
+  background-color: var(--bg-color);
   color: var(--text-main);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
@@ -58,13 +58,10 @@ body {
 
 #root {
   width: 100%;
-  max-width: 450px; /* Mobile App Dimension */
-  margin: 0 auto;
   min-height: 100vh;
   position: relative;
   background-color: var(--bg-color);
   background-image: var(--bg-gradient);
-  box-shadow: 0 0 50px rgba(0,0,0,0.1);
   overflow-x: hidden;
 }
 
@@ -293,13 +290,27 @@ button {
   background: rgba(0, 0, 0, 0.2);
 }
 
-/* Base style for bottom nav (hidden on desktop) */
+/* Base style for bottom nav */
 .mobile-bottom-nav {
-  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.03);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Responsive Utilities */
-/* Apply Mobile Styles Globally */
+@media (max-width: 900px) {
   .responsive-nav {
     flex-direction: column !important;
     gap: 16px !important;
@@ -543,6 +554,7 @@ button {
   .responsive-nav {
     display: none !important;
   }
+}
 /* End Global Mobile Styles */
 
 /* Pure Mobile App Classes */
