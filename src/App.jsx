@@ -8,6 +8,7 @@ import Dashboard from './components/Dashboard';
 import FaceScanCamera from './components/FaceScanCamera';
 import ProgressTracker from './components/ProgressTracker';
 import AdminPanel from './components/AdminPanel';
+import BottomNav from './components/BottomNav';
 
 function HeroSection({ onStartScan }) {
   return (
@@ -289,7 +290,7 @@ function App() {
   const [currentView, setCurrentView] = useState(() => {
     if (window.location.pathname === '/adminmehak') return 'admin';
     if (window.location.pathname === '/progress') return 'progress';
-    return 'landing';
+    return 'signin';
   });
   const [user, setUser] = useState(null);
   const [scanImages, setScanImages] = useState(null);
@@ -437,6 +438,7 @@ function App() {
           setCurrentView('landing');
         }} />
       )}
+      <BottomNav currentView={currentView} setCurrentView={setCurrentView} user={user} />
     </>
   );
 }

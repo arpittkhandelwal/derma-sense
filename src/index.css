@@ -49,12 +49,22 @@
 body {
   margin: 0;
   font-family: var(--font-body);
-  background-color: var(--bg-color);
-  background-image: var(--bg-gradient);
+  background-color: #E2E8F0; /* Grey background for desktop web preview */
   color: var(--text-main);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  max-width: 450px; /* Mobile App Dimension */
+  margin: 0 auto;
+  min-height: 100vh;
+  position: relative;
+  background-color: var(--bg-color);
+  background-image: var(--bg-gradient);
+  box-shadow: 0 0 50px rgba(0,0,0,0.1);
   overflow-x: hidden;
 }
 
@@ -283,8 +293,13 @@ button {
   background: rgba(0, 0, 0, 0.2);
 }
 
+/* Base style for bottom nav (hidden on desktop) */
+.mobile-bottom-nav {
+  display: none;
+}
+
 /* Responsive Utilities */
-@media (max-width: 768px) {
+/* Apply Mobile Styles Globally */
   .responsive-nav {
     flex-direction: column !important;
     gap: 16px !important;
@@ -470,7 +485,65 @@ button {
   .responsive-sticker-2 { top: 40px !important; right: 10px !important; }
   .responsive-sticker-3 { bottom: 20px !important; left: 10px !important; }
   .responsive-sticker-4 { bottom: 40px !important; right: 10px !important; }
-}
+  
+  /* Mobile Bottom Navigation Styles */
+  body {
+    padding-bottom: 80px !important;
+  }
+  
+  .mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 1000;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.03);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    flex: 1;
+    height: 100%;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .bottom-nav-item.active {
+    color: var(--primary-royal-purple);
+  }
+  
+  .bottom-nav-item.active .bottom-nav-icon {
+    transform: translateY(-2px);
+  }
+  
+  .bottom-nav-icon {
+    transition: transform 0.2s ease;
+  }
+  
+  .bottom-nav-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+  
+  /* Hide the top nav entirely on mobile since we have bottom nav */
+  .responsive-nav {
+    display: none !important;
+  }
+/* End Global Mobile Styles */
 
 @media (max-width: 480px) {
   .responsive-grid-4 {
