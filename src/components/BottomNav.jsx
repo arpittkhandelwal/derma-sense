@@ -1,26 +1,24 @@
 import React from 'react';
 import { Home, Camera, ActivitySquare, User, LayoutDashboard } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-function BottomNav({ currentView, setCurrentView, user }) {
+function BottomNav({ user }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const currentView = location.pathname;
+
   const navItems = [
-    { id: 'landing', icon: Home, label: 'Home' },
-    { id: 'facescan', icon: Camera, label: 'Scan' },
-    { id: 'dashboard', icon: LayoutDashboard, label: 'Results', hidden: !user },
-    { id: 'progress', icon: ActivitySquare, label: 'Progress', hidden: !user },
-    { id: 'signin', icon: User, label: 'Profile' },
+    { id: '/dashboard', icon: LayoutDashboard, label: 'Results', hidden: !user },
+    { id: '/facescan', icon: Camera, label: 'Scan', hidden: !user },
+    { id: '/progress', icon: ActivitySquare, label: 'Progress', hidden: !user },
+    { id: '/profile', icon: User, label: 'Profile', hidden: !user },
   ];
 
-  // If user is logged in, replace signin with admin/profile based on role
-  if (user) {
-    const profileIndex = navItems.findIndex(i => i.id === 'signin');
+  // If user is admin, allow admin route
+  if (user && user.role === 'Admin') {
+    const profileIndex = navItems.findIndex(i => i.id === '/profile');
     if (profileIndex !== -1) {
-      if (user.role === 'Admin') {
-        navItems[profileIndex] = { id: 'admin', icon: User, label: 'Admin' };
-      } else {
-         // Could go to a profile view, or sign out. Let's make it sign in view which we can adapt or just landing for signout.
-         // Wait, we don't have a specific profile view. Let's just point it to 'landing' but handle signout in the app or a modal.
-         navItems[profileIndex] = { id: 'landing', icon: User, label: 'Profile', onClick: () => alert('Profile options here') };
-      }
+      navItems[profileIndex] = { id: '/adminmehak', icon: User, label: 'Admin', hidden: false };
     }
   }
 
@@ -28,9 +26,14 @@ function BottomNav({ currentView, setCurrentView, user }) {
     if (item.onClick) {
       item.onClick();
     } else {
-      setCurrentView(item.id);
+      navigate(item.id);
     }
   };
+
+  // Do not show bottom nav on login page or if not logged in
+  if (!user || currentView === '/login' || currentView === '/') {
+    return null;
+  }
 
   return (
     <div className="mobile-bottom-nav">
