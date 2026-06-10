@@ -545,6 +545,117 @@ button {
   }
 /* End Global Mobile Styles */
 
+/* Pure Mobile App Classes */
+.mobile-app-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+}
+
+.mobile-signin-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-color);
+  position: relative;
+  overflow: hidden;
+  padding: 20px;
+}
+
+.ambient-glow {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  opacity: 0.15;
+  filter: blur(60px);
+  border-radius: 50%;
+}
+
+.glow-top-right {
+  top: -10%;
+  right: -10%;
+  background: radial-gradient(circle, var(--primary-electric-blue) 0%, transparent 70%);
+}
+
+.glow-bottom-left {
+  bottom: -10%;
+  left: -10%;
+  background: radial-gradient(circle, var(--secondary-soft-pink) 0%, transparent 70%);
+}
+
+.medical-pattern-bg {
+  position: absolute;
+  top: 0; left: -20%; right: -20%; bottom: 0;
+  background-image: url('/pattern.png');
+  background-size: 300px;
+  background-repeat: repeat;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  z-index: 0;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 75%);
+  mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 75%);
+}
+
+.mobile-signin-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 40px 24px;
+  background: rgba(255, 255, 255, 0.9);
+  z-index: 1;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+  border-radius: 24px;
+}
+
+.app-logo-box {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--primary-electric-blue), var(--primary-royal-purple));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(112,0,255,0.2);
+}
+
+.google-auth-btn {
+  width: 100%;
+  padding: 14px;
+  background: white;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  font-size: 1rem;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 16px 16px 16px 48px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: white;
+  outline: none;
+  color: var(--text-main);
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.auth-submit-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
 @media (max-width: 480px) {
   .responsive-grid-4 {
     grid-template-columns: 1fr !important;
