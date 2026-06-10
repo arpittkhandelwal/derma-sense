@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Camera, Brain, Sparkles, ChevronRight, ActivitySquare, Droplets, Sun, Wind, Heart, Smile, Flower2, Stethoscope, Mail, Lock, ArrowLeft } from 'lucide-react';
-import { auth } from './firebase';
+import { auth, db } from './firebase';
 import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import './index.css';
 import Dashboard from './components/Dashboard';
 import FaceScanCamera from './components/FaceScanCamera';
 import ProgressTracker from './components/ProgressTracker';
+import AdminPanel from './components/AdminPanel';
 
 function HeroSection({ onStartScan }) {
   return (
@@ -177,12 +179,17 @@ function SignInContent({ onBack, onSignIn }) {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      onSignIn({ 
+      const userObj = { 
         uid: result.user.uid,
         email: result.user.email, 
         name: result.user.displayName, 
-        picture: result.user.photoURL 
-      });
+        picture: result.user.photoURL,
+        role: 'User',
+        status: 'Active',
+        lastActive: new Date().toISOString()
+      };
+      await setDoc(doc(db, 'users', result.user.uid), userObj, { merge: true });
+      onSignIn(userObj);
     } catch (err) {
       console.error('Google Auth Failed', err);
       setErrorMsg('Google login failed.');
@@ -193,10 +200,14 @@ function SignInContent({ onBack, onSignIn }) {
       try {
           if (isSignUp) {
               const result = await createUserWithEmailAndPassword(auth, email, password);
-              onSignIn({ uid: result.user.uid, email: result.user.email });
+              const userObj = { uid: result.user.uid, email: result.user.email, name: email.split('@')[0], role: 'User', status: 'Active', lastActive: new Date().toISOString() };
+              await setDoc(doc(db, 'users', result.user.uid), userObj, { merge: true });
+              onSignIn(userObj);
           } else {
               const result = await signInWithEmailAndPassword(auth, email, password);
-              onSignIn({ uid: result.user.uid, email: result.user.email });
+              const userObj = { uid: result.user.uid, email: result.user.email, name: email.split('@')[0], role: 'User', status: 'Active', lastActive: new Date().toISOString() };
+              await setDoc(doc(db, 'users', result.user.uid), userObj, { merge: true });
+              onSignIn(userObj);
           }
       } catch (err) {
           console.error('Auth Error:', err);
@@ -276,6 +287,7 @@ function SignInView({ onBack, onSignIn }) {
 
 function App() {
   const [currentView, setCurrentView] = useState(() => {
+    if (window.location.pathname === '/adminmehak') return 'admin';
     if (window.location.pathname === '/progress') return 'progress';
     return 'landing';
   });
@@ -418,6 +430,12 @@ function App() {
       )}
       {currentView === 'progress' && (
         <ProgressTracker user={user} />
+      )}
+      {currentView === 'admin' && (
+        <AdminPanel onExit={() => {
+          window.history.pushState({}, '', '/');
+          setCurrentView('landing');
+        }} />
       )}
     </>
   );
