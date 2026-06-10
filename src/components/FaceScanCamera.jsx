@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Camera, CheckCircle2, ChevronRight, AlertCircle, X, ShieldAlert, Loader2, Brain } from 'lucide-react';
-import * as faceapi from '@vladmandic/face-api';
+import * as faceapi from 'face-api.js';
 
 const SCAN_STEPS = [
   { id: 'front', label: 'Front Angle', instruction: 'Look directly into the camera' },
@@ -173,7 +173,10 @@ export default function FaceScanCamera({ onComplete, onCancel }) {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext('2d');
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
       imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
     } else {
       // Mock captured image
@@ -253,14 +256,14 @@ export default function FaceScanCamera({ onComplete, onCancel }) {
       </div>
 
       {/* Main Camera Area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: '40px', position: 'relative', padding: '0 40px 40px 40px', width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
+      <div className="responsive-camera-stack" style={{ flex: 1, display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: '40px', position: 'relative', padding: '0 40px 40px 40px', width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
         
         {/* Left Checklist (Steps 0-2) */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '300px' }}>
+        <div className="mobile-order-2" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '300px' }}>
           {SCAN_STEPS.slice(0, 3).map((step) => {
             const isCompleted = !!capturedImages[step.id];
             return (
-              <div key={step.id} style={{ 
+              <div key={step.id} className="responsive-checklist-item" style={{ 
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '16px 20px', borderRadius: '16px',
                 background: !isCompleted ? 'rgba(0,184,212,0.1)' : 'white',
@@ -269,7 +272,7 @@ export default function FaceScanCamera({ onComplete, onCancel }) {
                 transition: 'all 0.3s'
               }}>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ 
+                  <span className="responsive-checklist-item-title" style={{ 
                     color: isCompleted ? '#94A3B8' : '#1E293B',
                     fontWeight: !isCompleted ? 600 : 500,
                     fontSize: '1.3rem',
@@ -277,7 +280,7 @@ export default function FaceScanCamera({ onComplete, onCancel }) {
                   }}>
                     {step.label}
                   </span>
-                  <div style={{ opacity: isCompleted ? 0 : 1, transition: 'opacity 0.3s', pointerEvents: 'none' }}>
+                  <div className="responsive-checklist-item-subtitle" style={{ opacity: isCompleted ? 0 : 1, transition: 'opacity 0.3s', pointerEvents: 'none' }}>
                     <span style={{ fontSize: '1rem', color: 'var(--primary-cyan)', marginTop: '6px', display: 'block' }}>{step.instruction}</span>
                   </div>
                 </div>
@@ -294,8 +297,8 @@ export default function FaceScanCamera({ onComplete, onCancel }) {
           })}
         </div>
 
-        {/* Center Camera Container (Horizontal Rectangle) */}
-        <div style={{ position: 'relative', width: '650px', height: '450px', flexShrink: 0, background: '#000', borderRadius: '32px', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.15)' }}>
+        {/* Center Camera Container (Horizontal Video Feed Box */}
+        <div className="responsive-camera-box mobile-order-1" style={{ position: 'relative', width: '650px', height: '450px', flexShrink: 0, background: '#000', borderRadius: '32px', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.15)' }}>
           
           {/* Live Telemetry HUD */}
           <div style={{ position: 'absolute', top: '20px', left: '20px', background: 'rgba(0,0,0,0.6)', padding: '8px 12px', borderRadius: '8px', zIndex: 60, display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -339,11 +342,11 @@ export default function FaceScanCamera({ onComplete, onCancel }) {
         </div>
 
         {/* Right Checklist (Steps 3-5) */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '300px' }}>
+        <div className="mobile-order-3" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '300px' }}>
           {SCAN_STEPS.slice(3, 6).map((step) => {
             const isCompleted = !!capturedImages[step.id];
             return (
-              <div key={step.id} style={{ 
+              <div key={step.id} className="responsive-checklist-item" style={{ 
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '16px 20px', borderRadius: '16px',
                 background: !isCompleted ? 'rgba(0,184,212,0.1)' : 'white',
@@ -352,7 +355,7 @@ export default function FaceScanCamera({ onComplete, onCancel }) {
                 transition: 'all 0.3s'
               }}>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ 
+                  <span className="responsive-checklist-item-title" style={{ 
                     color: isCompleted ? '#94A3B8' : '#1E293B',
                     fontWeight: !isCompleted ? 600 : 500,
                     fontSize: '1.3rem',
@@ -360,7 +363,7 @@ export default function FaceScanCamera({ onComplete, onCancel }) {
                   }}>
                     {step.label}
                   </span>
-                  <div style={{ opacity: isCompleted ? 0 : 1, transition: 'opacity 0.3s', pointerEvents: 'none' }}>
+                  <div className="responsive-checklist-item-subtitle" style={{ opacity: isCompleted ? 0 : 1, transition: 'opacity 0.3s', pointerEvents: 'none' }}>
                     <span style={{ fontSize: '1rem', color: 'var(--primary-cyan)', marginTop: '6px', display: 'block' }}>{step.instruction}</span>
                   </div>
                 </div>

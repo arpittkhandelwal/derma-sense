@@ -146,7 +146,7 @@ const ProgressTracker = ({ user }) => {
   const circleOffset = 283 - (283 * progressPercent) / 100;
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F8FAFC', color: '#0F172A', fontFamily: 'Inter, sans-serif', padding: '40px', overflowX: 'hidden', position: 'relative' }}>
+    <div className="responsive-padding" style={{ minHeight: '100vh', background: '#F8FAFC', color: '#0F172A', fontFamily: 'Inter, sans-serif', padding: '40px', overflowX: 'hidden', position: 'relative' }}>
       
       {/* Background Ambience */}
       <div style={{ position: 'fixed', top: '-10%', right: '-5%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(0,184,212,0.15) 0%, transparent 60%)', filter: 'blur(80px)', zIndex: 0 }} />
@@ -155,7 +155,7 @@ const ProgressTracker = ({ user }) => {
       <div style={{ maxWidth: '1400px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
         
         {/* Top Header */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '40px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '40px', flexWrap: 'wrap', gap: '20px' }}>
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 16px', background: 'white', borderRadius: '100px', border: '1px solid rgba(0,0,0,0.05)', boxShadow: '0 8px 16px rgba(0,0,0,0.03)', marginBottom: '16px' }}>
                 <Activity size={14} color="#7000FF" />
@@ -212,7 +212,7 @@ const ProgressTracker = ({ user }) => {
         </div>
 
         {/* Splilt Screen Mission Control */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '40px' }}>
+        <div className="responsive-split" style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '40px' }}>
           
           {/* LEFT: Timetable & Ring */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>

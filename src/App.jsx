@@ -9,16 +9,16 @@ import ProgressTracker from './components/ProgressTracker';
 
 function HeroSection({ onStartScan }) {
   return (
-    <section className="container" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', paddingTop: '100px', position: 'relative' }}>
+    <section className="container responsive-hero" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', paddingTop: '120px', position: 'relative' }}>
       
       {/* Background Ambient Glow */}
       <div style={{ position: 'absolute', top: '10%', right: '5%', width: '500px', height: '500px', background: 'radial-gradient(circle, var(--secondary-soft-pink) 0%, transparent 60%)', opacity: 0.15, filter: 'blur(60px)', zIndex: 0 }} />
       <div style={{ position: 'absolute', bottom: '10%', left: '5%', width: '400px', height: '400px', background: 'radial-gradient(circle, var(--primary-electric-blue) 0%, transparent 60%)', opacity: 0.15, filter: 'blur(60px)', zIndex: 0 }} />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', width: '100%', alignItems: 'center', zIndex: 2 }}>
+      <div className="responsive-hero-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', width: '100%', alignItems: 'center', zIndex: 2 }}>
         
-        {/* Left Text Content - Shifted left without conflicting with fade-in animation */}
-        <div className="animate-fade-in" style={{ paddingRight: '20px', position: 'relative', left: '-80px' }}>
+        {/* Left Text Content */}
+        <div className="animate-fade-in" style={{ paddingRight: '20px', position: 'relative' }}>
           
           <div style={{ position: 'relative', display: 'inline-block', marginBottom: '24px' }}>
             {/* Sticker 1: In front of Next-Gen pill (left side of pill) */}
@@ -41,7 +41,7 @@ function HeroSection({ onStartScan }) {
                <Heart size={28} color="var(--secondary-soft-pink)" />
             </div>
             {/* Sticker 3: In between space of "Personal" and "Skin Intelligence" */}
-            <div className="animate-float" style={{ position: 'absolute', top: '10px', right: '-40px', background: 'white', padding: '14px', borderRadius: '20px', boxShadow: '0 12px 30px rgba(255,109,0,0.15)', animationDelay: '0.8s', transform: 'rotate(15deg)', zIndex: 10 }}>
+            <div className="animate-float" style={{ position: 'absolute', top: '-10px', right: '-80px', background: 'white', padding: '14px', borderRadius: '20px', boxShadow: '0 12px 30px rgba(255,109,0,0.15)', animationDelay: '0.8s', transform: 'rotate(15deg)', zIndex: 10 }}>
                <Smile size={28} color="var(--accent-orange)" />
             </div>
 
@@ -67,10 +67,10 @@ function HeroSection({ onStartScan }) {
         </div>
 
         {/* Right High-end Graphic & Stickers */}
-        <div className="animate-fade-in" style={{ position: 'relative', height: '700px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="animate-fade-in responsive-image-reset" style={{ position: 'relative', height: '700px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           
           {/* Main Display Image - Scaled down to restore sharpness */}
-          <div style={{ position: 'absolute', width: '160%', height: '100%', right: '-50%', top: '0', zIndex: 1, pointerEvents: 'none', overflow: 'hidden', WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 15%, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 100%)', maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 15%, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 100%)' }}>
+          <div className="responsive-image-reset" style={{ position: 'absolute', width: '160%', height: '100%', right: '-50%', top: '0', zIndex: 1, pointerEvents: 'none', overflow: 'hidden', WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 15%, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 100%)', maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 15%, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 100%)' }}>
              <div style={{ width: '100%', height: '100%', WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 15%, rgba(0,0,0,1) 65%, rgba(0,0,0,0) 85%)', maskImage: 'linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 15%, rgba(0,0,0,1) 65%, rgba(0,0,0,0) 85%)' }}>
                  <img src="/ai_scan_2.jpg" alt="AI Skin Mapping" style={{ width: '125%', height: '100%', objectFit: 'contain', objectPosition: 'left center', transform: 'translateX(-20%)', imageRendering: 'high-quality', filter: 'blur(0.6px) contrast(1.08) saturate(1.05)' }} />
              </div>
@@ -104,16 +104,16 @@ function FeaturesSection() {
       <div style={{ position: 'absolute', top: '0', left: '-20%', right: '-20%', bottom: '0', backgroundImage: 'url("/pattern.png")', backgroundSize: '300px', backgroundRepeat: 'repeat', opacity: 0.5, mixBlendMode: 'multiply', zIndex: 0, pointerEvents: 'none', WebkitMaskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 75%)', maskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 75%)' }} />
 
       {/* Decorative Corner Stickers */}
-      <div className="animate-float" style={{ position: 'absolute', top: '40px', left: '40px', background: 'white', padding: '16px', borderRadius: '24px', boxShadow: '0 12px 30px rgba(0,184,212,0.15)', animationDelay: '0.2s', transform: 'rotate(-12deg)', zIndex: 10 }}>
+      <div className="animate-float responsive-sticker-1" style={{ position: 'absolute', top: '40px', left: '40px', background: 'white', padding: '16px', borderRadius: '24px', boxShadow: '0 12px 30px rgba(0,184,212,0.15)', animationDelay: '0.2s', transform: 'rotate(-12deg)', zIndex: 10 }}>
          <Sparkles size={28} color="var(--primary-cyan)" />
       </div>
-      <div className="animate-float" style={{ position: 'absolute', top: '80px', right: '60px', background: 'white', padding: '14px', borderRadius: '50%', boxShadow: '0 12px 30px rgba(255,109,0,0.15)', animationDelay: '1.4s', transform: 'rotate(15deg)', zIndex: 10 }}>
+      <div className="animate-float responsive-sticker-2" style={{ position: 'absolute', top: '80px', right: '60px', background: 'white', padding: '14px', borderRadius: '50%', boxShadow: '0 12px 30px rgba(255,109,0,0.15)', animationDelay: '1.4s', transform: 'rotate(15deg)', zIndex: 10 }}>
          <Sun size={26} color="var(--accent-orange)" />
       </div>
-      <div className="animate-float" style={{ position: 'absolute', bottom: '160px', left: '60px', background: 'white', padding: '18px', borderRadius: '20px', boxShadow: '0 12px 30px rgba(0,200,83,0.15)', animationDelay: '0.8s', transform: 'rotate(-5deg)', zIndex: 10 }}>
+      <div className="animate-float responsive-sticker-3" style={{ position: 'absolute', bottom: '160px', left: '60px', background: 'white', padding: '18px', borderRadius: '20px', boxShadow: '0 12px 30px rgba(0,200,83,0.15)', animationDelay: '0.8s', transform: 'rotate(-5deg)', zIndex: 10 }}>
          <Flower2 size={30} color="var(--accent-emerald)" />
       </div>
-      <div className="animate-float" style={{ position: 'absolute', bottom: '80px', right: '40px', background: 'white', padding: '14px', borderRadius: '24px', boxShadow: '0 12px 30px rgba(112,0,255,0.15)', animationDelay: '1.8s', transform: 'rotate(10deg)', zIndex: 10 }}>
+      <div className="animate-float responsive-sticker-4" style={{ position: 'absolute', bottom: '80px', right: '40px', background: 'white', padding: '14px', borderRadius: '24px', boxShadow: '0 12px 30px rgba(112,0,255,0.15)', animationDelay: '1.8s', transform: 'rotate(10deg)', zIndex: 10 }}>
          <Brain size={28} color="var(--primary-royal-purple)" />
       </div>
 
@@ -125,7 +125,7 @@ function FeaturesSection() {
       </div>
 
       {/* Asymmetric / Staggered Grid for modern feel */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', maxWidth: '1000px', margin: '0 auto' }}>
+      <div className="responsive-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', maxWidth: '1000px', margin: '0 auto' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '30px', marginTop: '40px' }}>
           <FeatureCard 
             icon={ActivitySquare} 
@@ -213,11 +213,11 @@ function SignInContent({ onBack, onSignIn }) {
       {/* Custom Healthcare Background Pattern */}
       <div style={{ position: 'absolute', top: '0', left: '-20%', right: '-20%', bottom: '0', backgroundImage: 'url("/pattern.png")', backgroundSize: '300px', backgroundRepeat: 'repeat', opacity: 0.5, mixBlendMode: 'multiply', zIndex: 0, pointerEvents: 'none', WebkitMaskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 75%)', maskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 75%)' }} />
 
-      <button onClick={onBack} style={{ position: 'absolute', top: '40px', left: '40px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontWeight: 600, background: 'transparent', border: 'none', cursor: 'pointer', zIndex: 10 }}>
+      <button onClick={onBack} style={{ position: 'absolute', top: '20px', left: '20px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontWeight: 600, background: 'transparent', border: 'none', cursor: 'pointer', zIndex: 10 }}>
         <ArrowLeft size={20} /> Back to Home
       </button>
 
-      <div className="glass-card" style={{ width: '100%', maxWidth: '450px', padding: '48px', background: 'rgba(255, 255, 255, 0.9)', zIndex: 1, boxShadow: '0 20px 60px rgba(0,0,0,0.08)' }}>
+      <div className="glass-card responsive-card-width" style={{ width: '100%', maxWidth: '450px', padding: '48px', background: 'rgba(255, 255, 255, 0.9)', zIndex: 1, boxShadow: '0 20px 60px rgba(0,0,0,0.08)' }}>
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
           <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'linear-gradient(135deg, var(--primary-electric-blue), var(--primary-royal-purple))', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 20px rgba(112,0,255,0.2)' }}>
             <Brain size={24} color="white" />
@@ -301,7 +301,7 @@ function App() {
     <>
       {currentView === 'landing' && (
         <>
-          <nav style={{ position: 'fixed', top: '24px', left: '50%', transform: 'translateX(-50%)', width: '90%', maxWidth: '900px', padding: '16px 32px', zIndex: 100, background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(24px)', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 12px 40px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <nav className="responsive-nav" style={{ position: 'fixed', top: '24px', left: '50%', transform: 'translateX(-50%)', width: '90%', maxWidth: '900px', padding: '16px 32px', zIndex: 100, background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(24px)', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 12px 40px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
               <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'linear-gradient(135deg, var(--primary-electric-blue), var(--primary-royal-purple))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Brain size={18} color="white" />
@@ -309,7 +309,7 @@ function App() {
               <span style={{ fontSize: '1.2rem', fontWeight: 700, letterSpacing: '-0.5px', color: 'var(--text-main)' }}>DermaSense<span style={{ color: 'var(--primary-cyan)' }}>AI</span></span>
             </div>
             
-            <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
               <a href="#" style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-muted)', transition: 'color 0.2s' }} onMouseOver={e=>e.target.style.color='var(--primary-royal-purple)'} onMouseOut={e=>e.target.style.color='var(--text-muted)'}>Clinical Science</a>
               <a href="#" style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-muted)', transition: 'color 0.2s' }} onMouseOver={e=>e.target.style.color='var(--primary-royal-purple)'} onMouseOut={e=>e.target.style.color='var(--text-muted)'}>Real Results</a>
               
@@ -330,8 +330,8 @@ function App() {
             
 
             {/* Comprehensive Footer */}
-            <footer style={{ background: 'var(--footer-bg)', padding: '60px 5%', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
-              <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '40px' }}>
+            <footer className="responsive-padding" style={{ background: 'var(--footer-bg)', padding: '60px 5%', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+              <div className="responsive-footer" style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '40px' }}>
                 
                 {/* Brand & Copyright */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
