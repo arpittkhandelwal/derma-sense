@@ -1,21 +1,22 @@
 import React from 'react';
-import { Home, Camera, LineChart, MessageSquare, Users, FileText, Settings, Brain, Package } from 'lucide-react';
+import { Home, Camera, LineChart, MessageSquare, Users, FileText, Settings, ActivitySquare, Brain, Package } from 'lucide-react';
 import '../OrbitUI.css';
 
-// 6 Exact Cards spaced evenly for the Helical DNA Orbit
-// 360deg / 6 = 60deg apart. 30s / 6 = 5s stagger delay.
+// 9 Exact Cards from the Screenshot in precise Left/Right stagger
 const cardsData = [
-  { id: '01', title: 'Face Scan', desc: 'Real-time biometric facial mapping', icon: Camera, color: '0, 229, 255', angle: 0, delay: 0 },
-  { id: '02', title: 'AI Analysis', desc: 'Deep neural network diagnostics', icon: Brain, color: '112, 0, 255', angle: 60, delay: -5 },
-  { id: '03', title: 'Product Recommendations', desc: 'Algorithmic personalized routines', icon: Package, color: '255, 109, 0', angle: 120, delay: -10 },
-  { id: '04', title: 'Progress Tracking', desc: 'Dynamic temporal skin metrics', icon: LineChart, color: '255, 64, 129', angle: 180, delay: -15 },
-  { id: '05', title: 'Community', desc: 'Global peer-to-peer data nodes', icon: Users, color: '0, 229, 255', angle: 240, delay: -20 },
-  { id: '06', title: 'Reports', desc: 'Volumetric clinical grade exports', icon: FileText, color: '0, 200, 83', angle: 300, delay: -25 },
+  { id: '01', title: 'AI Skin Analysis', desc: 'Advanced AI scans your skin and detects issues', icon: Brain, color: '112, 0, 255', y: -450, angle: 70 }, // Right
+  { id: '02', title: 'Face Scan', desc: 'Scan your face in real-time for detailed insights', icon: Camera, color: '0, 229, 255', y: -350, angle: 290 }, // Left
+  { id: '03', title: 'Acne Detection', desc: 'Detects acne, spots and inflammation', icon: ActivitySquare, color: '0, 200, 83', y: -250, angle: 90 }, // Right
+  { id: '04', title: 'Product Recommendations', desc: 'Personalized products for your skin', icon: Package, color: '255, 109, 0', y: -150, angle: 270 }, // Left
+  { id: '05', title: 'Progress Tracking', desc: 'Track your skin improvement over time', icon: LineChart, color: '255, 64, 129', y: 150, angle: 90 }, // Right
+  { id: '06', title: 'AI Dermatologist', desc: 'Get expert advice from AI dermatologist', icon: MessageSquare, color: '112, 0, 255', y: 250, angle: 270 }, // Left
+  { id: '07', title: 'Community', desc: 'Connect, share and learn with others', icon: Users, color: '0, 229, 255', y: 350, angle: 70 }, // Right
+  { id: '08', title: 'Reports', desc: 'Detailed reports and skin health insights', icon: FileText, color: '0, 200, 83', y: 450, angle: 290 }, // Left
+  { id: '09', title: 'Settings', desc: 'Personalize your experience', icon: Settings, color: '112, 0, 255', y: 550, angle: 90 }, // Right
 ];
 
 export default function OrbitUI() {
-  const radius = 350; // Distance from center
-  const duration = 30; // Seconds for one full cycle
+  const radius = 450; // Distance from center
 
   const renderDna = () => {
     const segments = [];
@@ -34,54 +35,9 @@ export default function OrbitUI() {
     return <svg width="100" height="1000" viewBox="0 0 100 1000">{segments}</svg>;
   };
 
-  // Generates 101 keyframes per card to calculate true physical Z-depth blurring, scale, and opacity at 60fps.
-  const generateZDepthKeyframes = () => {
-    return cardsData.map(card => {
-      let keyframes = '';
-      for (let pct = 0; pct <= 100; pct++) {
-        const t = pct / 100;
-        const spinnerAngle = 360 * t;
-        const totalAngle = card.angle + spinnerAngle;
-        const normalized = totalAngle % 360;
-        const distFromBack = Math.abs(normalized - 180);
-        const backness = 1 - (distFromBack / 180); 
-        
-        const blurPx = backness * 8; // Blur heavily at back
-        const scale = 1 - (backness * 0.35); // Shrink at back
-        const opacity = 1 - (backness * 0.6); // Fade into shadows
-        
-        keyframes += `
-          ${pct}% { 
-            transform: rotateY(-${totalAngle}deg) scale(${scale}); 
-            filter: blur(${blurPx}px); 
-            opacity: ${opacity}; 
-          }
-        `;
-      }
-      return `@keyframes anti-orbit-zdepth-${card.id} { ${keyframes} }`;
-    }).join('\n');
-  };
-
   return (
     <section className="orbit-section">
       
-      {/* Hardware Accelerated Math Injection */}
-      <style>{`
-        ${generateZDepthKeyframes()}
-        
-        @keyframes helical-rise {
-          0% { transform: translateY(450px) rotateY(var(--card-angle)) translateZ(${radius}px); opacity: 0; }
-          15% { opacity: 1; }
-          85% { opacity: 1; }
-          100% { transform: translateY(-450px) rotateY(var(--card-angle)) translateZ(${radius}px); opacity: 0; }
-        }
-
-        @keyframes synced-revolve {
-          0% { transform: rotateY(0deg); }
-          100% { transform: rotateY(360deg); }
-        }
-      `}</style>
-
       {/* Floating Left Sidebar */}
       <div className="orbit-sidebar">
         <Home size={24} className="orbit-sidebar-icon active" />
@@ -93,41 +49,39 @@ export default function OrbitUI() {
         <Settings size={24} className="orbit-sidebar-icon" style={{ marginTop: '40px' }} />
       </div>
 
-      {/* Top and Bottom Portals */}
+      {/* Top and Bottom Glowing Portals */}
       <div className="orbit-portal top"></div>
       <div className="orbit-portal bottom">
-        <div className="orbit-portal-text">Living Data <span style={{ color: '#00E5FF' }}>Ecosystem</span></div>
+        <div className="orbit-portal-text">Your Skin. Your Data. <span style={{ color: '#00E5FF' }}>Smarter Care.</span></div>
       </div>
 
-      {/* 3D Scene */}
+      {/* Main 3D Orbit Scene */}
       <div className="orbit-scene">
         
-        {/* Continuous DNA Core */}
+        {/* Exact Glowing Dotted DNA Pillar */}
         <div className="orbit-dna-pillar" style={{ top: '-10px' }}>
            {renderDna()}
         </div>
 
-        {/* Central Core Sphere */}
+        {/* Central "Skin Genome" Orb */}
         <div className="orbit-center-orb">
-          <h3>Core System</h3>
-          <p>Dermasense Neural Net</p>
+          <h3>Skin Genome</h3>
+          <p>Your unique skin ID</p>
           <div style={{ margin: '8px 0', width: '40px', height: '1px', background: 'rgba(0,229,255,0.5)' }}></div>
-          <p>Processing...</p>
+          <p>Data • AI • Care</p>
         </div>
 
-        {/* The Revolving System (Forced to exact same duration to sync perfectly) */}
-        <div className="orbit-spinner" style={{ animation: `synced-revolve ${duration}s infinite linear` }}>
+        {/* The Static System */}
+        <div className="orbit-spinner">
           {cardsData.map((card) => (
             <div 
               key={card.id} 
               className="orbit-card-wrapper" 
               style={{ 
-                '--card-angle': `${card.angle}deg`,
-                animation: `helical-rise ${duration}s linear infinite`,
-                animationDelay: `${card.delay}s`
+                transform: `translateY(${card.y}px) rotateY(${card.angle}deg) translateZ(${radius}px)` 
               }}
             >
-              {/* Sweeping Tether Line pointing backwards (-90deg) to the center axis! */}
+              {/* Swooping Curved Dotted Tether Line pointing back to the core */}
               <div style={{ position: 'absolute', right: '150px', top: '50%', width: radius, height: '100px', transformOrigin: 'right center', transform: 'translateY(-50px) rotateY(-90deg)' }}>
                 <svg width="100%" height="100%" viewBox={`0 0 ${radius} 100`} preserveAspectRatio="none">
                   <path d={`M 0,50 Q ${radius/2},100 ${radius},50`} stroke="#00E5FF" strokeWidth="1.5" strokeDasharray="5 5" fill="none" opacity="0.6" filter="drop-shadow(0 0 5px #00E5FF)" />
@@ -135,10 +89,10 @@ export default function OrbitUI() {
                 </svg>
               </div>
 
-              {/* Z-Depth Counter-Rotating Card */}
+              {/* The perfectly static card, counter-rotated to permanently face the camera */}
               <div 
                 className="orbit-card-inner"
-                style={{ animation: `anti-orbit-zdepth-${card.id} ${duration}s infinite linear`, animationDelay: `0s` }}
+                style={{ transform: `rotateY(-${card.angle}deg)` }}
               >
                 <div className="orbit-card-number">{card.id}</div>
                 <div className="orbit-card-icon" style={{ color: `rgb(${card.color})`, borderColor: `rgba(${card.color}, 0.5)` }}>

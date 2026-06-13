@@ -127,7 +127,6 @@
   width: 10px;
   height: 1000px;
   transform-style: preserve-3d;
-  animation: scene-revolve 40s infinite linear;
 }
 
 /* Central Orb */
