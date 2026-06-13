@@ -1,8 +1,0 @@
-{
-  "appId": "com.dermasense.app",
-  "appName": "DermaSense AI",
-  "webDir": "dist",
-  "server": {
-    "url": "https://dermasense-ai.netlify.app"
-  }
-}
