@@ -204,51 +204,6 @@ function LandingPage({ user }) {
               <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '40px' }}>© Fontus Health Ltd. 2026. All rights reserved.</p>
             </div>
 
-            {/* Navigation Links */}
-            <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
-              <a className="footer-link">Terms and Conditions</a>
-              <a className="footer-link">Privacy Policy</a>
-              <a className="footer-link">Cookies</a>
-              <a className="footer-link">Contact Us</a>
-            </div>
-
-            {/* Social & Store Links */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'flex-end' }}>
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <a className="social-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-                </a>
-                <a className="social-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg>
-                </a>
-                <a className="social-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
-                </a>
-              </div>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <a className="store-btn" style={{ padding: '6px 12px' }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                     {/* Simplified icon for footer */}
-                     <path d="M2 2v20l17-10L2 2z" />
-                  </svg>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                    <span style={{ fontSize: '0.55rem', textTransform: 'uppercase', opacity: 0.8 }}>Get it on</span>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 600, lineHeight: 1 }}>Google Play</span>
-                  </div>
-                </a>
-                <a className="store-btn" style={{ padding: '6px 12px' }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    {/* Simplified icon for footer */}
-                    <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm3.636 14.182c-1.002 0-2.008-.43-2.656-.43-.655 0-1.637.41-2.583.41-1.326 0-2.553-.787-3.236-2.008-1.428-2.518-1.22-6.28.163-8.71 .66-1.144 1.83-1.88 3.09-1.88 1.293 0 2.296.84 2.943.84.664 0 1.802-.857 3.235-.857 1.353 0 2.428.536 3.12 1.554-2.735 1.633-2.288 5.633.454 6.776-.64 1.614-1.424 2.87-2.53 4.305zm-.848-8.835c-.47 1.15-1.748 1.942-3.003 1.825.263-1.385 1.054-2.656 2.17-3.414.502-.34 1.1-.564 1.706-.628-.158 1.01-.587 1.624-.873 2.217z"/>
-                  </svg>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                    <span style={{ fontSize: '0.55rem', textTransform: 'uppercase', opacity: 0.8 }}>Download on the</span>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 600, lineHeight: 1 }}>App Store</span>
-                  </div>
-                </a>
-              </div>
-            </div>
-
           </div>
         </footer>
 
