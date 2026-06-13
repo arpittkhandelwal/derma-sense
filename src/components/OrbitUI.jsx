@@ -75,6 +75,11 @@ export default function OrbitUI() {
           85% { opacity: 1; }
           100% { transform: translateY(-450px) rotateY(var(--card-angle)) translateZ(${radius}px); opacity: 0; }
         }
+
+        @keyframes synced-revolve {
+          0% { transform: rotateY(0deg); }
+          100% { transform: rotateY(360deg); }
+        }
       `}</style>
 
       {/* Floating Left Sidebar */}
@@ -110,8 +115,8 @@ export default function OrbitUI() {
           <p>Processing...</p>
         </div>
 
-        {/* The Revolving System */}
-        <div className="orbit-spinner">
+        {/* The Revolving System (Forced to exact same duration to sync perfectly) */}
+        <div className="orbit-spinner" style={{ animation: `synced-revolve ${duration}s infinite linear` }}>
           {cardsData.map((card) => (
             <div 
               key={card.id} 
@@ -122,8 +127,8 @@ export default function OrbitUI() {
                 animationDelay: `${card.delay}s`
               }}
             >
-              {/* Sweeping Tether Line */}
-              <div style={{ position: 'absolute', right: '150px', top: '50%', width: radius, height: '100px', transformOrigin: 'right center', transform: 'translateY(-50px)' }}>
+              {/* Sweeping Tether Line pointing backwards (-90deg) to the center axis! */}
+              <div style={{ position: 'absolute', right: '150px', top: '50%', width: radius, height: '100px', transformOrigin: 'right center', transform: 'translateY(-50px) rotateY(-90deg)' }}>
                 <svg width="100%" height="100%" viewBox={`0 0 ${radius} 100`} preserveAspectRatio="none">
                   <path d={`M 0,50 Q ${radius/2},100 ${radius},50`} stroke="#00E5FF" strokeWidth="1.5" strokeDasharray="5 5" fill="none" opacity="0.6" filter="drop-shadow(0 0 5px #00E5FF)" />
                   <circle cx="0" cy="50" r="4" fill="#00E5FF" filter="drop-shadow(0 0 8px #00E5FF)" />
@@ -133,7 +138,7 @@ export default function OrbitUI() {
               {/* Z-Depth Counter-Rotating Card */}
               <div 
                 className="orbit-card-inner"
-                style={{ animation: `anti-orbit-zdepth-${card.id} ${duration}s infinite linear`, animationDelay: `${card.delay}s` }}
+                style={{ animation: `anti-orbit-zdepth-${card.id} ${duration}s infinite linear`, animationDelay: `0s` }}
               >
                 <div className="orbit-card-number">{card.id}</div>
                 <div className="orbit-card-icon" style={{ color: `rgb(${card.color})`, borderColor: `rgba(${card.color}, 0.5)` }}>
