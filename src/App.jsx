@@ -201,7 +201,7 @@ function AppContent() {
         <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
       </Routes>
       
-      <BottomNav user={user} />
+      {user && location.pathname !== '/' && location.pathname !== '/login' && <BottomNav user={user} />}
     </div>
   );
 }
