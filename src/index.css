@@ -482,14 +482,22 @@ button {
 }
 
 /* 3D Revolving Carousel Styles */
-@keyframes revolve {
+@keyframes scene-orbit {
   0% { transform: rotateY(0deg); }
   100% { transform: rotateY(360deg); }
 }
 
+/* 6 Distinct Anti-Orbit Keyframes to keep cards facing the camera */
+@keyframes anti-orbit-0 { from { transform: rotateY(0deg); } to { transform: rotateY(-360deg); } }
+@keyframes anti-orbit-60 { from { transform: rotateY(-60deg); } to { transform: rotateY(-420deg); } }
+@keyframes anti-orbit-120 { from { transform: rotateY(-120deg); } to { transform: rotateY(-480deg); } }
+@keyframes anti-orbit-180 { from { transform: rotateY(-180deg); } to { transform: rotateY(-540deg); } }
+@keyframes anti-orbit-240 { from { transform: rotateY(-240deg); } to { transform: rotateY(-600deg); } }
+@keyframes anti-orbit-300 { from { transform: rotateY(-300deg); } to { transform: rotateY(-660deg); } }
+
 @keyframes dna-spin {
-  0% { transform: translate(-50%, -50%) rotateY(0deg); }
-  100% { transform: translate(-50%, -50%) rotateY(-360deg); } /* Spin opposite direction */
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(-360deg); }
 }
 
 @keyframes float-dna {
@@ -498,14 +506,14 @@ button {
 }
 
 .carousel-scene {
-  perspective: 1200px;
+  perspective: 1500px;
   width: 100%;
-  height: 800px;
+  height: 900px;
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 60px 0 100px;
+  margin: 80px 0 120px;
   overflow-x: hidden;
   overflow-y: visible;
 }
@@ -513,60 +521,73 @@ button {
 .carousel-spinner {
   position: absolute;
   width: 320px;
-  height: 400px;
+  height: 140px; /* Shorter card height */
   transform-style: preserve-3d;
-  animation: revolve 30s infinite linear;
+  animation: scene-orbit 25s infinite linear;
 }
 
-/* Pause animation on hover so users can read the cards */
-.carousel-spinner:hover {
-  animation-play-state: paused;
+/* Pause animation on hover */
+.carousel-spinner:hover, .carousel-spinner:hover .carousel-card-inner {
+  animation-play-state: paused !important;
 }
 
 .carousel-card-wrapper {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  backface-visibility: visible;
-  transition: transform 0.3s ease;
+  transform-style: preserve-3d;
 }
 
 .carousel-card-inner {
   width: 100%;
   height: 100%;
-  background: white; /* Base light palette */
-  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.85); /* Light premium glassmorphism */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 15px 35px rgba(0, 184, 212, 0.1), 0 5px 15px rgba(112, 0, 255, 0.05);
+  border-radius: 20px;
   overflow: hidden;
+  /* Backface visibility MUST be visible so they don't pop out when they counter-rotate behind */
+  backface-visibility: visible;
+  /* We apply the specific anti-orbit animation inline in React */
 }
 
-.dna-centerpiece {
+/* Continuous Vertical DNA Pillar */
+.dna-pillar-container {
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   transform-style: preserve-3d;
-  animation: dna-spin 15s infinite linear;
+  animation: dna-spin 10s infinite linear, float-dna 4s infinite ease-in-out;
   z-index: 10;
 }
 
-.dna-glow {
-  filter: drop-shadow(0 0 20px rgba(0, 184, 212, 0.6)) drop-shadow(0 0 40px rgba(112, 0, 255, 0.4));
-  animation: float-dna 4s infinite ease-in-out;
+.dna-segment {
+  filter: drop-shadow(0 0 15px rgba(0, 184, 212, 0.5)) drop-shadow(0 0 30px rgba(112, 0, 255, 0.3));
+}
+
+.dna-segment:not(:first-child) {
+  margin-top: -35px; /* Creates continuous seamless strand */
 }
 
 /* Responsive Radius for Carousel */
 :root {
-  --carousel-radius: 400px;
+  --carousel-radius: 450px;
 }
 @media (max-width: 1024px) {
   :root { --carousel-radius: 350px; }
-  .carousel-scene { height: 700px; }
+  .carousel-scene { height: 800px; }
 }
 @media (max-width: 768px) {
-  :root { --carousel-radius: 250px; }
-  .carousel-spinner { width: 280px; }
-  .carousel-scene { height: 600px; }
+  :root { --carousel-radius: 260px; }
+  .carousel-spinner { width: 260px; }
+  .carousel-scene { height: 750px; }
 }
 @media (max-width: 480px) {
-  :root { --carousel-radius: 180px; }
-  .carousel-spinner { width: 240px; }
-  .carousel-scene { height: 500px; }
+  :root { --carousel-radius: 160px; }
+  .carousel-spinner { width: 220px; }
+  .carousel-scene { height: 600px; }
 }
