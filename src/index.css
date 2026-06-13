@@ -50,11 +50,18 @@ body {
   margin: 0;
   font-family: var(--font-body);
   background-color: var(--bg-color);
-  background-image: var(--bg-gradient);
   color: var(--text-main);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  background-color: var(--bg-color);
+  background-image: var(--bg-gradient);
   overflow-x: hidden;
 }
 
@@ -283,8 +290,27 @@ button {
   background: rgba(0, 0, 0, 0.2);
 }
 
+/* Base style for bottom nav */
+.mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.03);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 /* Responsive Utilities */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .responsive-nav {
     flex-direction: column !important;
     gap: 16px !important;
@@ -470,6 +496,176 @@ button {
   .responsive-sticker-2 { top: 40px !important; right: 10px !important; }
   .responsive-sticker-3 { bottom: 20px !important; left: 10px !important; }
   .responsive-sticker-4 { bottom: 40px !important; right: 10px !important; }
+  
+  /* Mobile Bottom Navigation Styles */
+  body {
+    padding-bottom: 80px !important;
+  }
+  
+  .mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 1000;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.03);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    flex: 1;
+    height: 100%;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .bottom-nav-item.active {
+    color: var(--primary-royal-purple);
+  }
+  
+  .bottom-nav-item.active .bottom-nav-icon {
+    transform: translateY(-2px);
+  }
+  
+  .bottom-nav-icon {
+    transition: transform 0.2s ease;
+  }
+  
+  .bottom-nav-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+  
+  /* Hide the top nav entirely on mobile since we have bottom nav */
+  .responsive-nav {
+    display: none !important;
+  }
+}
+/* End Global Mobile Styles */
+
+/* Pure Mobile App Classes */
+.mobile-app-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+}
+
+.mobile-signin-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-color);
+  position: relative;
+  overflow: hidden;
+  padding: 20px;
+}
+
+.ambient-glow {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  opacity: 0.15;
+  filter: blur(60px);
+  border-radius: 50%;
+}
+
+.glow-top-right {
+  top: -10%;
+  right: -10%;
+  background: radial-gradient(circle, var(--primary-electric-blue) 0%, transparent 70%);
+}
+
+.glow-bottom-left {
+  bottom: -10%;
+  left: -10%;
+  background: radial-gradient(circle, var(--secondary-soft-pink) 0%, transparent 70%);
+}
+
+.medical-pattern-bg {
+  position: absolute;
+  top: 0; left: -20%; right: -20%; bottom: 0;
+  background-image: url('/pattern.png');
+  background-size: 300px;
+  background-repeat: repeat;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  z-index: 0;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 75%);
+  mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 75%);
+}
+
+.mobile-signin-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 40px 24px;
+  background: rgba(255, 255, 255, 0.9);
+  z-index: 1;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+  border-radius: 24px;
+}
+
+.app-logo-box {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--primary-electric-blue), var(--primary-royal-purple));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(112,0,255,0.2);
+}
+
+.google-auth-btn {
+  width: 100%;
+  padding: 14px;
+  background: white;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  font-size: 1rem;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 16px 16px 16px 48px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: white;
+  outline: none;
+  color: var(--text-main);
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.auth-submit-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 24px;
 }
 
 @media (max-width: 480px) {
@@ -479,115 +675,4 @@ button {
   .responsive-title {
     font-size: 2rem !important;
   }
-}
-
-/* 3D Revolving Carousel Styles */
-@keyframes scene-orbit {
-  0% { transform: rotateY(0deg); }
-  100% { transform: rotateY(360deg); }
-}
-
-/* 6 Distinct Anti-Orbit Keyframes to keep cards facing the camera */
-@keyframes anti-orbit-0 { from { transform: rotateY(0deg); } to { transform: rotateY(-360deg); } }
-@keyframes anti-orbit-60 { from { transform: rotateY(-60deg); } to { transform: rotateY(-420deg); } }
-@keyframes anti-orbit-120 { from { transform: rotateY(-120deg); } to { transform: rotateY(-480deg); } }
-@keyframes anti-orbit-180 { from { transform: rotateY(-180deg); } to { transform: rotateY(-540deg); } }
-@keyframes anti-orbit-240 { from { transform: rotateY(-240deg); } to { transform: rotateY(-600deg); } }
-@keyframes anti-orbit-300 { from { transform: rotateY(-300deg); } to { transform: rotateY(-660deg); } }
-
-@keyframes dna-spin {
-  0% { transform: rotateY(0deg); }
-  100% { transform: rotateY(-360deg); }
-}
-
-@keyframes float-dna {
-  0%, 100% { margin-top: 0; }
-  50% { margin-top: -15px; }
-}
-
-.carousel-scene {
-  perspective: 1500px;
-  width: 100%;
-  height: 900px;
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 80px 0 120px;
-  overflow-x: hidden;
-  overflow-y: visible;
-}
-
-.carousel-spinner {
-  position: absolute;
-  width: 320px;
-  height: 140px; /* Shorter card height */
-  transform-style: preserve-3d;
-  animation: scene-orbit 25s infinite linear;
-}
-
-/* Pause animation on hover */
-.carousel-spinner:hover, .carousel-spinner:hover .carousel-card-inner {
-  animation-play-state: paused !important;
-}
-
-.carousel-card-wrapper {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  transform-style: preserve-3d;
-}
-
-.carousel-card-inner {
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.85); /* Light premium glassmorphism */
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 15px 35px rgba(0, 184, 212, 0.1), 0 5px 15px rgba(112, 0, 255, 0.05);
-  border-radius: 20px;
-  overflow: hidden;
-  /* Backface visibility MUST be visible so they don't pop out when they counter-rotate behind */
-  backface-visibility: visible;
-  /* We apply the specific anti-orbit animation inline in React */
-}
-
-/* Continuous Vertical DNA Pillar */
-.dna-pillar-container {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  transform-style: preserve-3d;
-  animation: dna-spin 10s infinite linear, float-dna 4s infinite ease-in-out;
-  z-index: 10;
-}
-
-.dna-segment {
-  filter: drop-shadow(0 0 15px rgba(0, 184, 212, 0.5)) drop-shadow(0 0 30px rgba(112, 0, 255, 0.3));
-}
-
-.dna-segment:not(:first-child) {
-  margin-top: -35px; /* Creates continuous seamless strand */
-}
-
-/* Responsive Radius for Carousel */
-:root {
-  --carousel-radius: 450px;
-}
-@media (max-width: 1024px) {
-  :root { --carousel-radius: 350px; }
-  .carousel-scene { height: 800px; }
-}
-@media (max-width: 768px) {
-  :root { --carousel-radius: 260px; }
-  .carousel-spinner { width: 260px; }
-  .carousel-scene { height: 750px; }
-}
-@media (max-width: 480px) {
-  :root { --carousel-radius: 160px; }
-  .carousel-spinner { width: 220px; }
-  .carousel-scene { height: 600px; }
 }
