@@ -6,6 +6,7 @@ import './index.css';
 import Dashboard from './components/Dashboard';
 import FaceScanCamera from './components/FaceScanCamera';
 import ProgressTracker from './components/ProgressTracker';
+import OrbitUI from './components/OrbitUI';
 
 function HeroSection({ onStartScan }) {
   return (
@@ -96,20 +97,6 @@ function FeatureCard({ icon: Icon, title, description, color }) {
   );
 }
 
-function OrbitCard({ icon: Icon, title, description, color, animationClass }) {
-  return (
-    <div className="carousel-card-inner" style={{ animation: `${animationClass} 25s infinite linear`, display: 'flex', alignItems: 'center', gap: '20px', padding: '20px' }}>
-      <div style={{ width: '64px', height: '64px', minWidth: '64px', borderRadius: '16px', background: `linear-gradient(135deg, rgba(${color}, 0.15), rgba(${color}, 0.05))`, border: `1px solid rgba(${color}, 0.2)`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `inset 0 2px 4px rgba(255,255,255,0.5), 0 8px 16px rgba(${color}, 0.15)` }}>
-        <Icon size={32} style={{ color: `rgb(${color})`, filter: `drop-shadow(0 4px 8px rgba(${color},0.4))` }} />
-      </div>
-      <div style={{ textAlign: 'left' }}>
-        <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '4px', letterSpacing: '-0.01em' }}>{title}</h3>
-        <p style={{ color: 'var(--text-muted)', lineHeight: 1.4, fontSize: '0.9rem', fontWeight: 500 }}>{description}</p>
-      </div>
-    </div>
-  );
-}
-
 function FeaturesSection() {
   return (
     <section className="container" style={{ padding: '100px 24px', position: 'relative' }}>
@@ -138,85 +125,7 @@ function FeaturesSection() {
         </p>
       </div>
 
-      {/* 3D Revolving Skincare Carousel */}
-      <div className="carousel-scene">
-        
-        {/* Continuous DNA Pillar Centerpiece */}
-        <div className="dna-pillar-container">
-          <Dna size={160} color="var(--primary-cyan)" className="dna-segment" strokeWidth={1.2} />
-          <Dna size={160} color="var(--primary-deep-violet)" className="dna-segment" strokeWidth={1.2} />
-          <Dna size={160} color="var(--primary-royal-purple)" className="dna-segment" strokeWidth={1.2} />
-          <Dna size={160} color="var(--secondary-soft-pink)" className="dna-segment" strokeWidth={1.2} />
-        </div>
-
-        <div className="carousel-spinner">
-          {/* Card 1: Acne AI Scan (0deg) */}
-          <div className="carousel-card-wrapper" style={{ transform: 'rotateY(0deg) translateZ(var(--carousel-radius)) translateY(-240px)' }}>
-            <OrbitCard 
-              icon={ActivitySquare} 
-              title="Acne AI Scan" 
-              description="Real-time detection with medical-grade precision."
-              color="255, 109, 0"
-              animationClass="anti-orbit-0"
-            />
-          </div>
-
-          {/* Card 2: Hydration Tracking (60deg) */}
-          <div className="carousel-card-wrapper" style={{ transform: 'rotateY(60deg) translateZ(var(--carousel-radius)) translateY(-140px)' }}>
-            <OrbitCard 
-              icon={Droplets} 
-              title="Hydration Tracking" 
-              description="Correlate lifestyle, sleep, and water intake."
-              color="0, 200, 83"
-              animationClass="anti-orbit-60"
-            />
-          </div>
-
-          {/* Card 3: AI Skin Analysis (120deg) */}
-          <div className="carousel-card-wrapper" style={{ transform: 'rotateY(120deg) translateZ(var(--carousel-radius)) translateY(-40px)' }}>
-            <OrbitCard 
-              icon={Brain} 
-              title="AI Skin Analysis" 
-              description="Advanced predictive neural network models."
-              color="112, 0, 255"
-              animationClass="anti-orbit-120"
-            />
-          </div>
-
-          {/* Card 4: Clinical Grade Confidence (180deg) */}
-          <div className="carousel-card-wrapper" style={{ transform: 'rotateY(180deg) translateZ(var(--carousel-radius)) translateY(60px)' }}>
-            <OrbitCard 
-              icon={Stethoscope} 
-              title="Clinical Grade" 
-              description="Trained on over 2 million clinical images."
-              color="0, 184, 212"
-              animationClass="anti-orbit-180"
-            />
-          </div>
-
-          {/* Card 5: Progress Tracking (240deg) */}
-          <div className="carousel-card-wrapper" style={{ transform: 'rotateY(240deg) translateZ(var(--carousel-radius)) translateY(160px)' }}>
-            <OrbitCard 
-              icon={ActivitySquare} 
-              title="Progress Tracking" 
-              description="Track your skin improvement over time."
-              color="255, 64, 129"
-              animationClass="anti-orbit-240"
-            />
-          </div>
-
-          {/* Card 6: Hair & Scalp Analysis (300deg) */}
-          <div className="carousel-card-wrapper" style={{ transform: 'rotateY(300deg) translateZ(var(--carousel-radius)) translateY(260px)' }}>
-            <OrbitCard 
-              icon={Wind} 
-              title="Hair & Scalp Analysis" 
-              description="Track hair density and scalp health dynamically."
-              color="0, 184, 212"
-              animationClass="anti-orbit-300"
-            />
-          </div>
-        </div>
-      </div>
+      <OrbitUI />
     </section>
   );
 }
