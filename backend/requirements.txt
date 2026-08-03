@@ -6,3 +6,5 @@ python-multipart
 Pillow
 torch
 torchvision
+opencv-python-headless
+mediapipe
