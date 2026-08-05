@@ -37,14 +37,22 @@ acne_model, acne_classes = load_resnet(os.path.join(MODELS_DIR, 'acne_model.pth'
 skintype_model, skintype_classes = load_resnet(os.path.join(MODELS_DIR, 'skintype_model.pth'), 3)
 
 
-# Initialize MediaPipe Face Mesh
-mp_face_mesh = mp.solutions.face_mesh
-face_mesh = mp_face_mesh.FaceMesh(
-    static_image_mode=True,
-    max_num_faces=1,
-    refine_landmarks=True,
-    min_detection_confidence=0.5
-)
+# Initialize MediaPipe Face Mesh safely
+face_mesh = None
+try:
+    if hasattr(mp, 'solutions') and hasattr(mp.solutions, 'face_mesh'):
+        mp_face_mesh = mp.solutions.face_mesh
+    else:
+        import mediapipe.python.solutions.face_mesh as mp_face_mesh
+    
+    face_mesh = mp_face_mesh.FaceMesh(
+        static_image_mode=True,
+        max_num_faces=1,
+        refine_landmarks=True,
+        min_detection_confidence=0.5
+    )
+except Exception as e:
+    print(f"Warning: MediaPipe FaceMesh initialization warning: {e}")
 
 def analyze_image(file_path: str):
     """
