@@ -55,7 +55,7 @@ export default function AdminPanel({ onExit }) {
   
   // Settings State
   const [globalThreshold, setGlobalThreshold] = useState(85);
-  const [backendUrl, setBackendUrl] = useState("http://localhost:8000");
+  const [backendUrl, setBackendUrl] = useState("https://derma-sense-ai.onrender.com");
   const [clientFallback, setClientFallback] = useState(true);
   const [privacyMode, setPrivacyMode] = useState(false);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
