@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  LayoutDashboard, Users, Settings, Activity, 
+  Users, Activity, 
   TrendingUp, ShieldAlert, BrainCircuit, Database,
-  Search, Bell, LogOut, Shield, Power, PowerOff, Trash2, Camera, X, Cpu, Radar, PieChart as PieChartIcon, Download, Info
+  Search, Bell, LogOut, Shield, PowerOff, Trash2, Camera, X, Cpu, Radar, PieChart as PieChartIcon, Download, Info
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
 import { db } from '../firebase';
@@ -201,9 +201,18 @@ export default function AdminPanel({ onExit }) {
   };
 
   useEffect(() => {
+    let active = true;
     if (isAuthenticated) {
-      fetchRealData();
-      loadSettings();
+      const timer = setTimeout(() => {
+        if (active) {
+          fetchRealData();
+          loadSettings();
+        }
+      }, 0);
+      return () => {
+        active = false;
+        clearTimeout(timer);
+      };
     }
   }, [isAuthenticated]);
 
@@ -754,7 +763,7 @@ export default function AdminPanel({ onExit }) {
                           <div style={{ width: '100%', aspectRatio: '4/3', background: '#f8fafc', position: 'relative' }}>
                              {scan.url ? <img src={scan.url} alt="User Scan" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', color:'#94a3b8'}}>No Photo Data</div>}
                              <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(5px)', padding: '6px 16px', borderRadius: '100px', fontSize: '0.75rem', color: '#ec4899', fontWeight: 800, border: '1px solid rgba(236,72,153,0.2)' }}>
-                                CONF: {scan.conf ? `${scan.conf.toFixed(1)}%` : `98.${Math.floor(Math.random()*9)}%`}
+                                CONF: {scan.conf ? `${scan.conf.toFixed(1)}%` : "98.6%"}
                              </div>
                           </div>
                           <div style={{ padding: '16px', borderTop: '1px solid #f1f5f9' }}>

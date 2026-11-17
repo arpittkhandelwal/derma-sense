@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Activity, Shield, AlertCircle } from 'lucide-react';
+import { Camera, Shield, AlertCircle } from 'lucide-react';
 
 export default function ScanInterface() {
   const [scanProgress, setScanProgress] = useState(0);
@@ -7,12 +7,17 @@ export default function ScanInterface() {
   const [scanComplete, setScanComplete] = useState(false);
 
   useEffect(() => {
-    if (isScanning && scanProgress < 100) {
+    if (!isScanning) return;
+
+    if (scanProgress < 100) {
       const timer = setTimeout(() => setScanProgress(p => p + 1), 30);
       return () => clearTimeout(timer);
-    } else if (scanProgress >= 100) {
-      setIsScanning(false);
-      setScanComplete(true);
+    } else {
+      const timer = setTimeout(() => {
+        setIsScanning(false);
+        setScanComplete(true);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [isScanning, scanProgress]);
 

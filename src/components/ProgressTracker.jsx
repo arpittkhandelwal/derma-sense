@@ -1,19 +1,62 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Calendar, Camera, Check, Clock, Sunrise, Moon, ArrowLeft, RefreshCw, Sparkles, Activity, ShieldAlert, Crosshair } from 'lucide-react';
-import { db } from '../firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { Activity, Camera, Check, Sunrise, Moon } from 'lucide-react';
 
-const ProgressTracker = ({ user }) => {
-  const [currentDate, setCurrentDate] = useState(new Date().toISOString().split('T')[0]);
-  const [routineState, setRoutineState] = useState({
-    am: { cleanser: false, vitaminC: false, moisturizer: false, sunscreen: false },
-    pm: { doubleCleanse: false, retinol: false, nightCream: false }
-  });
-  
+const mockHistoricalData = [
+  { day: 'Mon', glow: 76, hydration: 68 },
+  { day: 'Tue', glow: 78, hydration: 70 },
+  { day: 'Wed', glow: 75, hydration: 72 },
+  { day: 'Thu', glow: 81, hydration: 75 },
+  { day: 'Fri', glow: 80, hydration: 74 },
+  { day: 'Sat', glow: 83, hydration: 77 },
+  { day: 'Sun', glow: 85, hydration: 80 },
+];
+
+const ProgressTracker = () => {
+  const [trendData] = useState(mockHistoricalData);
   const [photoLog, setPhotoLog] = useState({});
+  const [currentDate, setCurrentDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
+
+  const [routineState, setRoutineState] = useState(() => {
+    try {
+      const saved = localStorage.getItem('derma_routine_state');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed?.am && parsed?.pm) return parsed;
+      }
+    } catch {
+      // fallback
+    }
+    return {
+      am: { cleanser: true, serum: true, moisturizer: true, spf: false },
+      pm: { doubleCleanse: true, retinol: false, nightCream: true },
+    };
+  });
+
+  useEffect(() => {
+    localStorage.setItem('derma_routine_state', JSON.stringify(routineState));
+  }, [routineState]);
+
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
+  const toggleRoutine = (time, step) => {
+    setRoutineState(prev => ({
+      ...prev,
+      [time]: {
+        ...prev[time],
+        [step]: !prev[time][step],
+      },
+    }));
+  };
 
   const getPastDates = () => {
     const dates = [];
@@ -25,357 +68,261 @@ const ProgressTracker = ({ user }) => {
     return dates;
   };
 
-  useEffect(() => {
-    const fetchFirestoreData = async () => {
-      if (!user) return;
-      const dates = getPastDates();
-      const loadedPhotos = {};
-      let foundTodayRoutine = false;
-
-      for (const d of dates) {
-        try {
-          const docRef = doc(db, 'users', user.uid, 'logs', d);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            if (data.photo) loadedPhotos[d] = data.photo;
-            if (d === currentDate && data.routineState) {
-              setRoutineState(data.routineState);
-              foundTodayRoutine = true;
-            }
-          }
-        } catch (e) {
-          console.error("Firestore read error:", e);
-        }
-      }
-
-      setPhotoLog(loadedPhotos);
-      if (!foundTodayRoutine) {
-         setRoutineState({
-            am: { cleanser: false, vitaminC: false, moisturizer: false, sunscreen: false },
-            pm: { doubleCleanse: false, retinol: false, nightCream: false }
-         });
-      }
-    };
-
-    fetchFirestoreData();
-  }, [currentDate, user]);
-
-  const toggleRoutine = async (time, step) => {
-    const newState = {
-      ...routineState,
-      [time]: {
-        ...routineState[time],
-        [step]: !routineState[time][step]
-      }
-    };
-    setRoutineState(newState);
-    if (user) {
-      try {
-        await setDoc(doc(db, 'users', user.uid, 'logs', currentDate), {
-          routineState: newState
-        }, { merge: true });
-      } catch (e) {
-        console.error("Error saving routine:", e);
-      }
-    }
-  };
-
   const startCamera = async () => {
-    setIsCameraActive(true);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+      streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.play();
       }
-      streamRef.current = stream;
+      setIsCameraActive(true);
     } catch (err) {
-      console.error("Camera error:", err);
-      alert("Unable to access camera. Please allow permissions.");
-      setIsCameraActive(false);
+      alert('Unable to access camera: ' + err.message);
     }
   };
 
-  const capturePhoto = async () => {
-    if (!videoRef.current) return;
-    const canvas = document.createElement('canvas');
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-    const dataUrl = canvas.toDataURL('image/jpeg');
-    
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-    }
-    setIsCameraActive(false);
+  const capturePhoto = () => {
+    if (videoRef.current) {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth || 640;
+      canvas.height = videoRef.current.videoHeight || 480;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(videoRef.current, 0, 0);
+      const dataUrl = canvas.toDataURL('image/jpeg');
 
-    const newLog = { ...photoLog, [currentDate]: dataUrl };
-    setPhotoLog(newLog);
-    if (user) {
-      try {
-        await setDoc(doc(db, 'users', user.uid, 'logs', currentDate), {
-          photo: dataUrl
-        }, { merge: true });
-      } catch (e) {
-        console.error("Error saving photo:", e);
-      }
+      setPhotoLog(prev => ({ ...prev, [currentDate]: dataUrl }));
+      stopCamera();
     }
   };
 
-  const cancelCamera = () => {
+  const stopCamera = () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
     }
     setIsCameraActive(false);
   };
 
-
-
-  const getYesterdayStr = () => {
-      const d = new Date(currentDate);
-      d.setDate(d.getDate() - 1);
-      return d.toISOString().split('T')[0];
-  };
-
-  // Progress Calculation
-  const totalSteps = Object.keys(routineState.am).length + Object.keys(routineState.pm).length;
-  const completedSteps = Object.values(routineState.am).filter(Boolean).length + Object.values(routineState.pm).filter(Boolean).length;
-  const progressPercent = Math.round((completedSteps / totalSteps) * 100) || 0;
-  const circleOffset = 283 - (283 * progressPercent) / 100;
+  const amSteps = Object.values(routineState.am);
+  const pmSteps = Object.values(routineState.pm);
+  const totalSteps = amSteps.length + pmSteps.length;
+  const completedSteps = amSteps.filter(Boolean).length + pmSteps.filter(Boolean).length;
+  const progressPercent = Math.round((completedSteps / totalSteps) * 100);
 
   return (
-    <div className="responsive-padding" style={{ minHeight: '100vh', background: '#F8FAFC', color: '#0F172A', fontFamily: 'Inter, sans-serif', padding: '40px', overflowX: 'hidden', position: 'relative' }}>
-      
-      {/* Background Ambience */}
-      <div style={{ position: 'fixed', top: '-10%', right: '-5%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(0,184,212,0.15) 0%, transparent 60%)', filter: 'blur(80px)', zIndex: 0 }} />
-      <div style={{ position: 'fixed', bottom: '-10%', left: '-5%', width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(112,0,255,0.15) 0%, transparent 60%)', filter: 'blur(80px)', zIndex: 0 }} />
+    <div className="min-h-screen bg-slate-50 text-slate-900 pb-32 pt-8 px-4 sm:px-8">
+      <div className="max-w-5xl mx-auto space-y-8">
 
-      <div style={{ maxWidth: '1400px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-        
-        {/* Top Header */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '40px', flexWrap: 'wrap', gap: '20px' }}>
+        {/* Header */}
+        <div className="flex items-center gap-4 bg-white border border-slate-200/90 rounded-2xl p-6 shadow-sm">
+          <div 
+            className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md shrink-0"
+            style={{ background: 'linear-gradient(135deg, #0d9488, #059669)' }}
+          >
+            <Activity size={24} className="text-white" />
+          </div>
           <div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 16px', background: 'white', borderRadius: '100px', border: '1px solid rgba(0,0,0,0.05)', boxShadow: '0 8px 16px rgba(0,0,0,0.03)', marginBottom: '16px' }}>
-                <Activity size={14} color="#7000FF" />
-                <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', color: '#0F172A' }}>Mission Control</span>
-            </div>
-            <h1 style={{ fontSize: '3.5rem', fontWeight: 800, margin: '0 0 8px 0', letterSpacing: '-1.5px', color: '#0F172A', lineHeight: 1 }}>Clinical Tracker</h1>
-            <p style={{ color: '#64748B', fontSize: '1.2rem', margin: 0, fontWeight: 500 }}>Monitor your advanced protocol and log daily metrics.</p>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+              Skin Progress & Daily Adherence
+            </h1>
+            <p className="text-slate-500 text-xs font-semibold mt-0.5">
+              Longitudinal biometric trends and daily skincare compliance log
+            </p>
           </div>
-          <button onClick={() => window.close()} style={{ padding: '16px 32px', background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(0,0,0,0.05)', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontWeight: 700, color: '#0F172A', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', transition: 'all 0.3s' }} onMouseOver={e=>e.currentTarget.style.transform='translateY(-2px)'} onMouseOut={e=>e.currentTarget.style.transform='none'}>
-            <ArrowLeft size={20} /> Return to Dashboard
-          </button>
         </div>
 
-        {/* Dynamic Calendar Strip */}
-        <div style={{ display: 'flex', gap: '16px', marginBottom: '40px', overflowX: 'auto', padding: '16px', background: 'rgba(255,255,255,0.22)', backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 10px 40px rgba(0,0,0,0.02)' }}>
-          {getPastDates().map((dateStr) => {
-            const dateObj = new Date(dateStr);
-            const isToday = dateStr === new Date().toISOString().split('T')[0];
-            const hasPhoto = !!photoLog[dateStr];
-            const isSelected = currentDate === dateStr;
-
-            return (
-              <div 
-                key={dateStr}
-                onClick={() => setCurrentDate(dateStr)}
-                style={{
-                  flex: '0 0 auto',
-                  width: '120px',
-                  padding: '20px 16px',
-                  borderRadius: '16px',
-                  background: isSelected ? 'rgba(255,255,255,0.9)' : 'transparent',
-                  color: isSelected ? '#0F172A' : '#64748B',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '8px',
-                  transition: 'all 0.3s',
-                  boxShadow: isSelected ? '0 10px 30px rgba(0,0,0,0.05)' : 'none'
-                }}
-              >
-                <span style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                  {isToday ? 'Today' : dateObj.toLocaleDateString('en-US', { weekday: 'short' })}
-                </span>
-                <span style={{ fontSize: '1.8rem', fontWeight: 800 }}>{dateObj.getDate()}</span>
-                {hasPhoto ? (
-                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00B8D4', boxShadow: '0 0 10px #00B8D4' }} />
-                ) : (
-                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', border: '1px solid #CBD5E1' }} />
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Splilt Screen Mission Control */}
-        <div className="responsive-split" style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '40px' }}>
-          
-          {/* LEFT: Timetable & Ring */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-            
-            {/* Massive Progress Ring Widget */}
-            <div style={{ background: 'rgba(255,255,255,0.22)', backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '32px', padding: '40px', boxShadow: '0 10px 40px rgba(0,0,0,0.03)', display: 'flex', alignItems: 'center', gap: '40px' }}>
-                <div style={{ position: 'relative', width: '140px', height: '140px' }}>
-                    <svg width="140" height="140" viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)' }}>
-                        <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(0,0,0,0.05)" strokeWidth="8" />
-                        <circle 
-                            cx="50" cy="50" r="45" fill="none" stroke="url(#progressGradient)" strokeWidth="8" strokeLinecap="round"
-                            style={{ strokeDasharray: 283, strokeDashoffset: circleOffset, transition: 'stroke-dashoffset 1s ease-in-out' }}
-                        />
-                        <defs>
-                            <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" stopColor="#00B8D4" />
-                                <stop offset="100%" stopColor="#7000FF" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-                        <span style={{ fontSize: '2rem', fontWeight: 800, color: '#0F172A', lineHeight: 1 }}>{progressPercent}%</span>
-                    </div>
-                </div>
-                <div>
-                    <h2 style={{ fontSize: '1.8rem', fontWeight: 800, margin: '0 0 8px 0', color: '#0F172A' }}>Daily Adherence</h2>
-                    <p style={{ margin: 0, fontSize: '1rem', color: '#64748B', lineHeight: 1.5 }}>
-                        {progressPercent === 100 ? "Clinical protocol perfectly executed!" : `${completedSteps} of ${totalSteps} clinical steps completed.`}
-                    </p>
-                </div>
-            </div>
-
-            {/* Routine Timetable Cards */}
-            <div style={{ background: 'rgba(255,255,255,0.22)', backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '32px', padding: '40px', boxShadow: '0 10px 40px rgba(0,0,0,0.03)' }}>
-              
-              {/* AM */}
-              <div style={{ marginBottom: '40px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-                  <div style={{ padding: '12px', background: 'white', borderRadius: '16px', boxShadow: '0 8px 16px rgba(0,184,212,0.1)' }}><Sunrise size={24} color="#00B8D4" /></div>
-                  <h3 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0, color: '#0F172A' }}>Morning Regimen</h3>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {['cleanser', 'vitaminC', 'moisturizer', 'sunscreen'].map((step, idx) => {
-                    const labels = { cleanser: 'Gentle Cleanser', vitaminC: 'Vitamin C Serum', moisturizer: 'Light Moisturizer', sunscreen: 'SPF 50+ Sunscreen' };
-                    const isChecked = routineState.am[step];
-                    return (
-                      <div key={step} onClick={() => toggleRoutine('am', step)} style={{ padding: '16px 20px', borderRadius: '16px', background: 'rgba(255,255,255,0.6)', border: `1px solid ${isChecked ? '#00B8D4' : 'rgba(0,0,0,0.05)'}`, display: 'flex', alignItems: 'center', gap: '20px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: isChecked ? 'inset 0 0 0 1px #00B8D4, 0 8px 16px rgba(0,184,212,0.1)' : 'none' }}>
-                        <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: isChecked ? '#00B8D4' : 'white', border: `2px solid ${isChecked ? '#00B8D4' : '#CBD5E1'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {isChecked && <Check size={16} color="white" strokeWidth={3} />}
-                        </div>
-                        <span style={{ fontSize: '1.1rem', fontWeight: 600, color: isChecked ? '#0F172A' : '#64748B' }}>{labels[step]}</span>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-
-              {/* PM */}
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-                  <div style={{ padding: '12px', background: 'white', borderRadius: '16px', boxShadow: '0 8px 16px rgba(112,0,255,0.1)' }}><Moon size={24} color="#7000FF" /></div>
-                  <h3 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0, color: '#0F172A' }}>Evening Protocol</h3>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {['doubleCleanse', 'retinol', 'nightCream'].map((step, idx) => {
-                    const labels = { doubleCleanse: 'Double Cleanse (Oil + Foam)', retinol: 'Retinol Active Treatment', nightCream: 'Rich Repair Cream' };
-                    const isChecked = routineState.pm[step];
-                    return (
-                      <div key={step} onClick={() => toggleRoutine('pm', step)} style={{ padding: '16px 20px', borderRadius: '16px', background: 'rgba(255,255,255,0.6)', border: `1px solid ${isChecked ? '#7000FF' : 'rgba(0,0,0,0.05)'}`, display: 'flex', alignItems: 'center', gap: '20px', cursor: 'pointer', transition: 'all 0.2s', boxShadow: isChecked ? 'inset 0 0 0 1px #7000FF, 0 8px 16px rgba(112,0,255,0.1)' : 'none' }}>
-                        <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: isChecked ? '#7000FF' : 'white', border: `2px solid ${isChecked ? '#7000FF' : '#CBD5E1'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            {isChecked && <Check size={16} color="white" strokeWidth={3} />}
-                        </div>
-                        <span style={{ fontSize: '1.1rem', fontWeight: 600, color: isChecked ? '#0F172A' : '#64748B' }}>{labels[step]}</span>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-
-            </div>
+        {/* 7-Day Trend Chart */}
+        <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xs font-black uppercase tracking-widest text-teal-700 flex items-center gap-2">
+              <Activity size={16} /> 7-Day Skin Metric Evolution
+            </h2>
+            <span className="text-xs font-bold text-slate-500">Weekly Score: +9.2%</span>
           </div>
 
-          {/* RIGHT: Face Capture Hub */}
-          <div style={{ background: 'rgba(255,255,255,0.22)', backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '32px', padding: '40px', boxShadow: '0 10px 40px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column' }}>
-             
-             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}>
-                 <h2 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '16px', color: '#0F172A' }}>
-                  <Crosshair size={28} color="#FF4081" /> Daily Scan Log
-                </h2>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'white', padding: '8px 16px', borderRadius: '100px', fontSize: '0.85rem', fontWeight: 700, color: '#64748B' }}>
-                    <ShieldAlert size={16} color="#00C853" /> Firebase Cloud Sync Active
-                </div>
-             </div>
+          <ResponsiveContainer width="100%" height={220}>
+            <AreaChart data={trendData} margin={{ top: 5, right: 10, bottom: 0, left: -20 }}>
+              <defs>
+                <linearGradient id="glowGradLight" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#0d9488" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#0d9488" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="hydGradLight" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#059669" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#059669" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
+              <XAxis dataKey="day" tick={{ fill: '#64748B', fontSize: 11, fontWeight: 600 }} axisLine={false} tickLine={false} />
+              <YAxis domain={[60, 100]} tick={{ fill: '#64748B', fontSize: 11, fontWeight: 600 }} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '12px', fontSize: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }} />
+              <Area type="monotone" dataKey="glow" stroke="#0d9488" strokeWidth={2.5} fill="url(#glowGradLight)" name="Health Index (CSHI)" dot={{ fill: '#0d9488', r: 3 }} />
+              <Area type="monotone" dataKey="hydration" stroke="#059669" strokeWidth={2.5} fill="url(#hydGradLight)" name="Hydration Index" dot={{ fill: '#059669', r: 3 }} />
+            </AreaChart>
+          </ResponsiveContainer>
 
-            {isCameraActive ? (
-              <div style={{ width: '100%', borderRadius: '24px', overflow: 'hidden', position: 'relative', background: '#0F172A', aspectRatio: '4/3', border: '1px solid rgba(255,255,255,0.1)', boxShadow: 'inset 0 0 100px rgba(0,0,0,0.8)' }}>
-                 <video ref={videoRef} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }} />
-                 {/* Clinical Scanner Overlay */}
-                 <div style={{ position: 'absolute', inset: '40px', border: '1px solid rgba(0,184,212,0.3)', pointerEvents: 'none' }} />
-                 <div style={{ position: 'absolute', top: '35px', left: '35px', width: '20px', height: '20px', borderTop: '2px solid #00B8D4', borderLeft: '2px solid #00B8D4' }} />
-                 <div style={{ position: 'absolute', top: '35px', right: '35px', width: '20px', height: '20px', borderTop: '2px solid #00B8D4', borderRight: '2px solid #00B8D4' }} />
-                 <div style={{ position: 'absolute', bottom: '35px', left: '35px', width: '20px', height: '20px', borderBottom: '2px solid #00B8D4', borderLeft: '2px solid #00B8D4' }} />
-                 <div style={{ position: 'absolute', bottom: '35px', right: '35px', width: '20px', height: '20px', borderBottom: '2px solid #00B8D4', borderRight: '2px solid #00B8D4' }} />
-                 
-                 <div style={{ position: 'absolute', bottom: '32px', left: '0', right: '0', display: 'flex', justifyContent: 'center', gap: '16px' }}>
-                    <button onClick={cancelCamera} style={{ padding: '16px 32px', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '100px', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>Abort</button>
-                    <button onClick={capturePhoto} style={{ padding: '16px 40px', background: 'white', color: '#0F172A', border: 'none', borderRadius: '100px', cursor: 'pointer', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='none'}><Camera size={20} /> Capture Metrics</button>
-                 </div>
+          <div className="flex gap-6 mt-4 justify-center">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-teal-600" />
+              <span className="text-xs font-bold text-slate-600">Skin Health Index (CSHI)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-emerald-600" />
+              <span className="text-xs font-bold text-slate-600">Stratum Corneum Hydration</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Adherence Ring + Checklist */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          {/* Adherence Ring Card */}
+          <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 flex flex-col items-center justify-between shadow-xs">
+            <h2 className="text-xs font-black uppercase tracking-widest text-teal-700 self-start">
+              Today's Regimen Adherence
+            </h2>
+            <div className="relative w-40 h-40 flex items-center justify-center my-4">
+              <svg width="150" height="150" className="-rotate-90">
+                <circle cx="75" cy="75" r="60" fill="none" stroke="#E2E8F0" strokeWidth="10" />
+                <circle
+                  cx="75" cy="75" r="60" fill="none"
+                  stroke="url(#ringGradTeal)" strokeWidth="10" strokeLinecap="round"
+                  strokeDasharray="377"
+                  strokeDashoffset={377 - (377 * progressPercent) / 100}
+                  style={{ transition: 'stroke-dashoffset 0.8s ease-out' }}
+                />
+                <defs>
+                  <linearGradient id="ringGradTeal" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#0d9488" />
+                    <stop offset="100%" stopColor="#059669" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="absolute text-center">
+                <p className="text-3xl font-black text-slate-900 tracking-tight">{progressPercent}%</p>
+                <p className="text-[10px] font-bold text-teal-700 uppercase">Complete</p>
               </div>
-            ) : photoLog[currentDate] ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                  <div style={{ width: '100%', borderRadius: '24px', overflow: 'hidden', position: 'relative', aspectRatio: '16/9', border: '4px solid white', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
-                    <img src={photoLog[currentDate]} alt="Daily Scan" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    <div style={{ position: 'absolute', top: '24px', left: '24px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', color: 'white', padding: '8px 16px', borderRadius: '100px', fontSize: '0.85rem', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>
-                        Logged: {currentDate}
-                    </div>
-                    <div style={{ position: 'absolute', bottom: '24px', right: '24px' }}>
-                    <button onClick={startCamera} style={{ padding: '16px 24px', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', color: '#0F172A', border: 'none', borderRadius: '100px', cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.15)' }}>
-                        <RefreshCw size={18} /> Retake
-                    </button>
-                    </div>
+            </div>
+            <p className="text-xs font-bold text-slate-500">
+              {completedSteps} of {totalSteps} clinical skincare steps completed
+            </p>
+          </div>
+
+          {/* AM / PM Routine Checklist */}
+          <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-xs">
+            {/* AM Routine */}
+            <h2 className="text-xs font-black uppercase tracking-widest text-amber-700 mb-3 flex items-center gap-1.5">
+              <Sunrise size={16} /> Morning Clinical Protocol
+            </h2>
+            <div className="space-y-2 mb-6">
+              {Object.entries(routineState.am).map(([step, done]) => (
+                <button
+                  key={step}
+                  onClick={() => toggleRoutine('am', step)}
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                    done ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
+                  }`}
+                >
+                  <div className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 ${done ? 'bg-emerald-600 border-emerald-600' : 'border-slate-300'}`}>
+                    {done && <Check size={12} className="text-white" />}
                   </div>
+                  <span className="capitalize">{step.replace(/([A-Z])/g, ' $1').trim()}</span>
+                </button>
+              ))}
+            </div>
 
-                  {/* Side by side comparison if yesterday exists */}
-                  {photoLog[getYesterdayStr()] && (
-                      <div style={{ background: 'white', padding: '24px', borderRadius: '24px', border: '1px solid rgba(0,0,0,0.05)', display: 'flex', gap: '24px', alignItems: 'center' }}>
-                         <div style={{ flex: 1 }}>
-                             <div style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: '#64748B', marginBottom: '8px', letterSpacing: '1px' }}>Yesterday</div>
-                             <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: '12px', overflow: 'hidden' }}>
-                                 <img src={photoLog[getYesterdayStr()]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                             </div>
-                         </div>
-                         <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#94A3B8' }}>
-                             VS
-                         </div>
-                         <div style={{ flex: 1 }}>
-                             <div style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: '#00B8D4', marginBottom: '8px', letterSpacing: '1px' }}>Today</div>
-                             <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: '12px', overflow: 'hidden' }}>
-                                 <img src={photoLog[currentDate]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                             </div>
-                         </div>
-                      </div>
-                  )}
-              </div>
-            ) : (
-              <div style={{ width: '100%', borderRadius: '32px', aspectRatio: '4/3', background: 'rgba(255,255,255,0.5)', border: '2px dashed rgba(0,184,212,0.3)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '24px', transition: 'all 0.3s' }}>
-                 <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(0,184,212,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 0 20px rgba(0,184,212,0.1)' }}>
-                   <Camera size={40} color="#00B8D4" />
-                 </div>
-                 <div style={{ textAlign: 'center' }}>
-                   <h3 style={{ margin: '0 0 12px 0', fontSize: '1.5rem', fontWeight: 800, color: '#0F172A' }}>Awaiting Scan</h3>
-                   <p style={{ margin: 0, color: '#64748B', fontSize: '1rem', fontWeight: 500 }}>No clinical imagery logged for {currentDate}</p>
-                 </div>
-                 <button onClick={startCamera} style={{ marginTop: '16px', padding: '20px 48px', background: 'linear-gradient(135deg, #00B8D4, #7000FF)', color: 'white', border: 'none', borderRadius: '100px', cursor: 'pointer', fontWeight: 800, fontSize: '1.1rem', boxShadow: '0 15px 30px rgba(112,0,255,0.2)', transition: 'transform 0.2s', display: 'flex', alignItems: 'center', gap: '12px' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e=>e.currentTarget.style.transform='none'}>
-                   <Sparkles size={20} /> Initialize Camera
-                 </button>
-              </div>
-            )}
+            {/* PM Routine */}
+            <h2 className="text-xs font-black uppercase tracking-widest text-teal-800 mb-3 flex items-center gap-1.5">
+              <Moon size={16} /> Evening Restoration Protocol
+            </h2>
+            <div className="space-y-2">
+              {Object.entries(routineState.pm).map(([step, done]) => (
+                <button
+                  key={step}
+                  onClick={() => toggleRoutine('pm', step)}
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                    done ? 'bg-teal-50 border-teal-300 text-teal-800' : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
+                  }`}
+                >
+                  <div className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 ${done ? 'bg-teal-600 border-teal-600' : 'border-slate-300'}`}>
+                    {done && <Check size={12} className="text-white" />}
+                  </div>
+                  <span className="capitalize">{step.replace(/([A-Z])/g, ' $1').trim()}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 7-Day Photo Log */}
+        <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xs font-black uppercase tracking-widest text-teal-700 flex items-center gap-2">
+              <Camera size={16} /> 7-Day Photographic Log
+            </h2>
+            <span className="text-xs text-slate-500 font-semibold">Standardized Angle Captures</span>
           </div>
 
+          <div className="grid grid-cols-7 gap-2.5">
+            {getPastDates().map(dateStr => {
+              const isToday = dateStr === new Date().toISOString().split('T')[0];
+              const photo = photoLog[dateStr];
+              return (
+                <div
+                  key={dateStr}
+                  onClick={() => setCurrentDate(dateStr)}
+                  className={`aspect-square rounded-2xl overflow-hidden border-2 cursor-pointer transition-all flex items-center justify-center ${
+                    currentDate === dateStr ? 'border-teal-500 shadow-md' : isToday ? 'border-emerald-400 bg-emerald-50/50' : 'border-slate-200 bg-slate-50'
+                  }`}
+                >
+                  {photo ? (
+                    <img src={photo} className="w-full h-full object-cover" alt={dateStr} />
+                  ) : (
+                    <Camera size={16} className={isToday ? 'text-emerald-600' : 'text-slate-300'} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-5 flex items-center justify-between flex-wrap gap-3">
+            <span className="text-xs text-slate-500 font-semibold">Selected Inspection Date: {currentDate}</span>
+            <button
+              onClick={startCamera}
+              className="px-5 py-2.5 text-xs font-bold text-white rounded-xl shadow-md flex items-center gap-2 cursor-pointer hover:opacity-95"
+              style={{ background: 'linear-gradient(135deg, #0d9488, #059669)' }}
+            >
+              <Camera size={14} /> Log Today's Capture
+            </button>
+          </div>
         </div>
 
       </div>
+
+      {/* Camera Capture Modal */}
+      {isCameraActive && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6">
+          <div className="bg-white rounded-3xl p-5 shadow-2xl w-full max-w-sm border border-slate-200">
+            <p className="text-center text-sm font-black text-slate-900 mb-3">Align Face in Clinical Guide</p>
+            <video ref={videoRef} autoPlay playsInline muted className="w-full aspect-square rounded-2xl bg-slate-100 object-cover" />
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={capturePhoto}
+                className="flex-1 py-3 text-white font-bold text-sm rounded-xl shadow-md hover:opacity-90 cursor-pointer"
+                style={{ background: 'linear-gradient(135deg, #0d9488, #059669)' }}
+              >
+                Capture Photo
+              </button>
+              <button
+                onClick={stopCamera}
+                className="px-5 py-3 bg-slate-100 text-slate-700 font-bold text-sm rounded-xl hover:bg-slate-200 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

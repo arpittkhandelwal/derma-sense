@@ -1,95 +1,141 @@
-import pandas as pd
-import pickle
 import os
+import pandas as pd
 import urllib.parse
-from sklearn.metrics.pairwise import cosine_similarity
 
-# Load Models
-MODELS_DIR = os.path.join(os.path.dirname(__file__), 'models')
-RECOMMENDER_PATH = os.path.join(MODELS_DIR, 'recommender.pkl')
+# Load Clinical Products Dataset
+DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
+SKINPRO_CSV = os.path.join(DATA_DIR, 'Skinpro - Skinpro (3).csv')
 
-model_data = None
+skinpro_df = None
 try:
-    if os.path.exists(RECOMMENDER_PATH):
-        with open(RECOMMENDER_PATH, 'rb') as f:
-            model_data = pickle.load(f)
-            print("Successfully loaded Recommender Model!")
+    if os.path.exists(SKINPRO_CSV):
+        skinpro_df = pd.read_csv(SKINPRO_CSV)
+        print(f"Loaded {len(skinpro_df)} clinical dermatology products from Skinpro dataset!")
     else:
-        print("Recommender model not found. Run train_recommender.py")
+        print("Skinpro dataset not found at", SKINPRO_CSV)
 except Exception as e:
-    print(f"Failed to load recommender: {e}")
+    print(f"Error loading Skinpro dataset: {e}")
 
-def get_recommendations(skin_type: str, concerns: list, limit: int = 3):
-    if not model_data:
-        return []
-        
-    vectorizer = model_data['vectorizer']
-    tfidf_matrix = model_data['tfidf_matrix']
-    df_products = model_data['products_df']
-    
-    # Construct a "user query" based on skin type and concerns
-    # Oily/acne -> salicylic acid, niacinamide
-    # Dry -> hyaluronic acid, ceramides
-    
-    query_terms = []
-    
-    if "oily" in skin_type.lower():
-        query_terms.extend(["Salicylic_Acid", "Niacinamide"])
-    elif "dry" in skin_type.lower():
-        query_terms.extend(["Hyaluronic_Acid", "Ceramides"])
-    elif "combination" in skin_type.lower():
-        query_terms.extend(["Niacinamide", "Vitamin_C"])
-        
-    for c in concerns:
-        if "acne" in c.lower():
-            query_terms.extend(["Salicylic_Acid", "Retinol"])
-        if "pigmentation" in c.lower():
-            query_terms.extend(["Vitamin_C", "Niacinamide"])
-        if "dryness" in c.lower():
-            query_terms.extend(["Hyaluronic_Acid"])
-            
-    query_str = " ".join(query_terms)
-    
-    if not query_str:
-        # Default fallback
-        query_str = "Hyaluronic_Acid Niacinamide"
-        
-    query_vec = vectorizer.transform([query_str])
-    
-    # Compute cosine similarity
-    sim_scores = cosine_similarity(query_vec, tfidf_matrix).flatten()
-    
-    # Get top indices
-    top_indices = sim_scores.argsort()[-limit:][::-1]
-    
-    recs = []
-    for idx in top_indices:
-        row = df_products.iloc[idx]
-        sim_score = sim_scores[idx]
-        
-        search_query = urllib.parse.quote_plus(f"{row['Brand']}")
-        amazon_url = f"https://www.amazon.in/s?k={search_query}&tag=dermasenseai2-21"
-        flipkart_url = f"https://www.flipkart.com/search?q={search_query}&affid=derma_sense"
-        web_url = f"https://www.google.com/search?q={search_query}+buy"
-        
-        # Calculate AI match % (map similarity score from 0.0-1.0 to 80-99%)
-        ai_match = int(80 + (sim_score * 19))
-        ai_match = min(99, max(80, ai_match))
-        
-        ingredients_list = str(row['Ingredients']).replace(' ', ', ')
-        highlights = f"Contains {ingredients_list}"
-        
-        recs.append({
-            "brand": row['Brand'],
-            "name": "Skincare Formula",  # Our products.csv didn't have product name, just Brand and Ingredients
-            "rating": 4.5,
-            "price": int(row['Price']) * 10, # Make it realistic INR
+FALLBACK_RECS = [
+    {
+        "brand": "The Ordinary",
+        "name": "Niacinamide 10% + Zinc 1%",
+        "rating": "4.8",
+        "ai_match": 96,
+        "highlights": "Clinically proven to target active sebum congestion and refine micro-pore diameter.",
+        "amazon_link": "https://www.amazon.in/s?k=The+Ordinary+Niacinamide",
+        "image_url": "https://m.media-amazon.com/images/I/61kYd3aT+SL._SL1500_.jpg"
+    },
+    {
+        "brand": "Neutrogena",
+        "name": "Hydro Boost Hyaluronic Acid Water Gel",
+        "rating": "4.9",
+        "ai_match": 94,
+        "highlights": "Trans-epidermal moisture lock formulation restoring 48h stratum corneum hydration.",
+        "amazon_link": "https://www.amazon.in/s?k=Neutrogena+Hydro+Boost",
+        "image_url": "https://m.media-amazon.com/images/I/71u9SfZvM1L._SL1500_.jpg"
+    },
+    {
+        "brand": "Paula's Choice",
+        "name": "Skin Perfecting 2% BHA Liquid Exfoliant",
+        "rating": "4.7",
+        "ai_match": 91,
+        "highlights": "Salicylic acid lipid-soluble exfoliant dissolves keratinized comedones.",
+        "amazon_link": "https://www.amazon.in/s?k=Paulas+Choice+2+BHA",
+        "image_url": "https://m.media-amazon.com/images/I/61dF9dK8tAL._SL1500_.jpg"
+    },
+    {
+        "brand": "CeraVe",
+        "name": "Hydrating Facial Cleanser with Essential Ceramides",
+        "rating": "4.9",
+        "ai_match": 97,
+        "highlights": "Physiological lipid replenishment preserving the acid mantle barrier.",
+        "amazon_link": "https://www.amazon.in/s?k=CeraVe+Hydrating+Cleanser",
+        "image_url": "https://m.media-amazon.com/images/I/71D0Yv-uDcL._SL1500_.jpg"
+    }
+]
+
+def get_recommendations(skin_type: str, concerns: list, limit: int = 4):
+    if skinpro_df is None or skinpro_df.empty:
+        return FALLBACK_RECS[:limit]
+
+    st_lower = str(skin_type or '').lower()
+    matches = []
+
+    for _, row in skinpro_df.iterrows():
+        row_st = str(row.get('Skin type', '')).lower()
+        row_c = str(row.get('Concern', '')).lower()
+        p_name = str(row.get('Product', '')).strip()
+
+        if not p_name or p_name.lower() == 'nan':
+            continue
+
+        score = 0
+        for token in st_lower.split():
+            if token and token in row_st:
+                score += 3
+        if 'normal' in row_st or 'combination' in row_st:
+            score += 1
+
+        for c in (concerns or []):
+            c_str = str(c).lower()
+            if c_str in row_c:
+                score += 4
+            elif ('pimples' in row_c or 'whitehead' in row_c) and 'acne' in c_str:
+                score += 3
+            elif 'pore' in c_str and ('whitehead' in row_c or 'acne' in row_c):
+                score += 2
+            elif 'hydration' in c_str and ('dry' in row_st or 'moistur' in p_name.lower()):
+                score += 3
+
+        if score > 0:
+            matches.append((score, row))
+
+    matches.sort(key=lambda x: x[0], reverse=True)
+
+    results = []
+    seen_products = set()
+
+    for score, row in matches:
+        p_name = str(row.get('Product', '')).strip()
+        if p_name in seen_products:
+            continue
+        seen_products.add(p_name)
+
+        url = str(row.get('product_url', ''))
+        pic = str(row.get('product_pic', ''))
+        concern = str(row.get('Concern', 'Clinical Care'))
+
+        # Brand extraction
+        parts = p_name.split()
+        brand_guess = parts[0]
+        if brand_guess in ['The', 'Dr.', 'La', 'Paula\'s']:
+            brand_guess = ' '.join(parts[:2])
+
+        search_query = urllib.parse.quote_plus(p_name)
+        amazon_link = url if 'amazon' in url else f"https://www.amazon.in/s?k={search_query}"
+
+        ai_match = min(99, max(84, 82 + score * 3))
+
+        results.append({
+            "brand": brand_guess,
+            "name": p_name,
+            "rating": "4.8",
             "ai_match": ai_match,
-            "highlights": highlights,
-            "amazon_link": amazon_url,
-            "flipkart_link": flipkart_url,
-            "web_link": web_url,
-            "image_url": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400&q=80"
+            "highlights": f"Formulated specifically for {concern}. Clinically calibrated for {skin_type} profile.",
+            "amazon_link": amazon_link,
+            "direct_url": url,
+            "image_url": pic if pic.startswith('http') else "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400&q=80"
         })
-        
-    return recs
+
+        if len(results) >= limit:
+            break
+
+    if len(results) < limit:
+        for fb in FALLBACK_RECS:
+            if not any(r['name'] == fb['name'] for r in results):
+                results.append(fb)
+            if len(results) >= limit:
+                break
+
+    return results

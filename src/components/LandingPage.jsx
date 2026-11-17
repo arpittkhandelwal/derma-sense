@@ -1,260 +1,412 @@
-import React from 'react';
-import { Camera, Brain, Sparkles, ChevronRight, ActivitySquare, Droplets, Sun, Wind, Heart, Smile, Flower2, Stethoscope } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Camera, Brain, ChevronRight, Activity, Droplets, Wind, Eye, Shield, CheckCircle2, ArrowRight, LayoutDashboard, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { auth } from '../firebase';
-import { signOut } from 'firebase/auth';
 
-function HeroSection({ onStartScan }) {
+const ROTATING_TERMS = [
+  'Vascular Erythema & Micro-Capillaries',
+  'Stratum Corneum Hydration & Barrier Lipids',
+  'Follicular Apertures & Surface Roughness (Ra)',
+  'Epidermal Melanin & Dyschromia Distribution',
+  'Localized Inflammatory Lesions'
+];
+
+function AnimatedWord() {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setIdx(i => (i + 1) % ROTATING_TERMS.length), 2600);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
-    <section className="container responsive-hero" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', paddingTop: '120px', position: 'relative', overflow: 'hidden' }}>
+    <span className="block mt-2 text-teal-800 font-black">
+      {ROTATING_TERMS[idx]}
+    </span>
+  );
+}
+
+// ── Realistic Clinical Complexion Analysis Preview Card ───────────────────────
+function ClinicalPreviewCard() {
+  const [mode, setMode] = useState('standard'); // 'standard' | 'erythema' | 'uv'
+
+  return (
+    <div className="w-full max-w-md mx-auto rounded-3xl bg-white border border-slate-200/90 shadow-xl overflow-hidden flex flex-col justify-between relative">
       
-      {/* Background Ambient Glow */}
-      <div style={{ position: 'absolute', top: '10%', right: '-10%', width: 'min(500px, 100vw)', height: '500px', background: 'radial-gradient(circle, var(--secondary-soft-pink) 0%, transparent 60%)', opacity: 0.15, filter: 'blur(60px)', zIndex: 0 }} />
-      <div style={{ position: 'absolute', bottom: '10%', left: '-10%', width: 'min(400px, 100vw)', height: '400px', background: 'radial-gradient(circle, var(--primary-electric-blue) 0%, transparent 60%)', opacity: 0.15, filter: 'blur(60px)', zIndex: 0 }} />
-
-      <div className="responsive-hero-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', width: '100%', alignItems: 'center', zIndex: 2 }}>
-        
-        {/* Left Text Content */}
-        <div className="animate-fade-in" style={{ paddingRight: '20px', position: 'relative' }}>
-          
-          <div style={{ position: 'relative', display: 'inline-block', marginBottom: '24px' }}>
-            <div className="animate-float" style={{ position: 'absolute', top: '-10px', left: '-60px', background: 'white', padding: '12px', borderRadius: '50%', boxShadow: '0 8px 24px rgba(0,200,83,0.15)', animationDelay: '1.2s', zIndex: 10 }}>
-               <Flower2 size={24} color="var(--accent-emerald)" />
-            </div>
-            <div className="animate-float" style={{ position: 'absolute', top: '-5px', right: '-65px', background: 'white', padding: '12px', borderRadius: '20px', boxShadow: '0 8px 24px rgba(112,0,255,0.15)', animationDelay: '1.5s', transform: 'rotate(10deg)', zIndex: 10 }}>
-               <Stethoscope size={24} color="var(--primary-royal-purple)" />
-            </div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'white', padding: '10px 20px', borderRadius: '100px', border: '1px solid rgba(0,0,0,0.05)', boxShadow: '0 8px 24px rgba(0,0,0,0.06)' }}>
-              <Sparkles size={18} color="var(--primary-royal-purple)" />
-              <span style={{ fontSize: '0.95rem', letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: 700 }} className="text-gradient-primary">Next-Gen AI Dermatology</span>
-            </div>
-          </div>
-          
-          <div style={{ position: 'relative', display: 'inline-block' }}>
-            <div className="animate-float" style={{ position: 'absolute', top: '40px', left: '-80px', background: 'white', padding: '14px', borderRadius: '24px', boxShadow: '0 12px 30px rgba(255,64,129,0.15)', animationDelay: '0s', transform: 'rotate(-10deg)', zIndex: 10 }}>
-               <Heart size={28} color="var(--secondary-soft-pink)" />
-            </div>
-            <div className="animate-float" style={{ position: 'absolute', top: '-10px', right: '-80px', background: 'white', padding: '14px', borderRadius: '20px', boxShadow: '0 12px 30px rgba(255,109,0,0.15)', animationDelay: '0.8s', transform: 'rotate(15deg)', zIndex: 10 }}>
-               <Smile size={28} color="var(--accent-orange)" />
-            </div>
-
-            <h1 style={{ position: 'relative', fontSize: 'clamp(3rem, 8vw, 5rem)', lineHeight: '1.05', marginBottom: '32px', fontWeight: 800, letterSpacing: '-0.03em', zIndex: 2 }}>
-              Your Personal <br />
-              <span className="text-gradient-primary">Skin Intelligence</span>
-            </h1>
-          </div>
-          
-          <p style={{ position: 'relative', fontSize: 'clamp(1rem, 3vw, 1.3rem)', color: 'var(--text-muted)', marginBottom: '48px', maxWidth: '550px', lineHeight: 1.6, fontWeight: 500, zIndex: 2 }}>
-            Experience the future of clinical dermatology. DermaSense AI uses advanced neural networks to map, analyze, and predict your skin health in real-time.
-          </p>
-          
-          <div className="responsive-hero-buttons" style={{ position: 'relative', display: 'flex', gap: '24px', zIndex: 2 }}>
-            <button className="btn-primary" onClick={onStartScan} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', padding: '18px 40px', fontSize: '1.1rem' }}>
-              <Camera size={22} />
-              Start Live Scan
-            </button>
-            <button className="btn-glass" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', background: 'white', padding: '18px 40px', fontSize: '1.1rem', color: 'var(--primary-deep-violet)' }}>
-              See How it Works <ChevronRight size={20} />
-            </button>
-          </div>
+      {/* Top Clinical Dossier Strip */}
+      <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+        <div className="flex items-center gap-2">
+          <div className="w-2.5 h-2.5 rounded-full bg-teal-600" />
+          <span className="text-xs font-black uppercase tracking-wider text-slate-800">
+            Clinical Multispectral Inspection
+          </span>
         </div>
+        <span className="text-[10px] font-mono font-bold text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200">
+          D65 · 0.12 mm/px
+        </span>
+      </div>
 
-        {/* Right High-end Graphic & Stickers */}
-        <div className="animate-fade-in responsive-image-reset" style={{ position: 'relative', height: '700px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div className="responsive-image-reset" style={{ position: 'absolute', width: '160%', height: '100%', right: '-50%', top: '0', zIndex: 1, pointerEvents: 'none', overflow: 'hidden', WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 15%, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 100%)', maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 15%, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 100%)' }}>
-             <div style={{ width: '100%', height: '100%', WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 15%, rgba(0,0,0,1) 65%, rgba(0,0,0,0) 85%)', maskImage: 'linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 15%, rgba(0,0,0,1) 65%, rgba(0,0,0,0) 85%)' }}>
-                 <img src="/ai_scan_2.jpg" alt="AI Skin Mapping" style={{ width: '125%', height: '100%', objectFit: 'contain', objectPosition: 'left center', transform: 'translateX(-20%)', imageRendering: 'high-quality', filter: 'blur(0.6px) contrast(1.08) saturate(1.05)' }} />
-             </div>
+      {/* Mode Switcher Tabs */}
+      <div className="px-4 pt-3 flex gap-1.5 bg-slate-50/50">
+        {[
+          { id: 'standard', label: 'Standard RGB' },
+          { id: 'erythema', label: 'Cross-Polarized' },
+          { id: 'uv', label: "Wood's UV (Sebum)" },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setMode(tab.id)}
+            className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              mode === tab.id
+                ? 'bg-teal-700 text-white shadow-xs'
+                : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Photo Viewport */}
+      <div className="relative aspect-4/3 bg-slate-950 overflow-hidden mx-4 mt-3 rounded-2xl border border-slate-200">
+        <img
+          src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=900"
+          alt="Clinical Dermatology Capture"
+          className={`w-full h-full object-cover transition-all duration-500 ${
+            mode === 'erythema'
+              ? 'contrast-150 saturate-200 brightness-95 sepia-[0.3] hue-rotate-[-20deg]'
+              : mode === 'uv'
+              ? 'brightness-75 contrast-175 invert-[0.15] hue-rotate-[190deg] saturate-150'
+              : ''
+          }`}
+        />
+
+        {/* Anatomical Overlays based on modality */}
+        {mode === 'erythema' && (
+          <div className="absolute inset-0 bg-red-900/10 pointer-events-none flex flex-col justify-between p-3">
+            <span className="self-start text-[9px] font-mono font-bold bg-black/70 text-rose-300 px-2 py-0.5 rounded">
+              SUB-SURFACE VASCULAR CONCENTRATION
+            </span>
+            <span className="self-end text-[9px] font-mono text-white bg-black/70 px-2 py-0.5 rounded">
+              Specular Reflection Suppressed
+            </span>
           </div>
+        )}
+
+        {mode === 'uv' && (
+          <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-3">
+            <span className="self-start text-[9px] font-mono font-bold bg-black/70 text-amber-400 px-2 py-0.5 rounded">
+              365nm UV FLUORESCENCE · FOLLICULAR SEBUM
+            </span>
+            <span className="self-end text-[9px] font-mono text-amber-300 bg-black/70 px-2 py-0.5 rounded">
+              Porphyrin Activity: Normal
+            </span>
+          </div>
+        )}
+
+        {mode === 'standard' && (
+          <div className="absolute bottom-3 left-3 flex items-center gap-1.5 pointer-events-none">
+            <div className="w-10 h-0.5 bg-white shadow-xs" />
+            <span className="text-[9px] font-mono text-white bg-black/60 px-1 rounded">10 mm</span>
+          </div>
+        )}
+      </div>
+
+      {/* Quantitative Clinical Telemetry Pills */}
+      <div className="p-4 grid grid-cols-3 gap-2 text-center">
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+          <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Hydration</p>
+          <p className="text-xs font-black text-teal-800 mt-0.5">78% (Optimal)</p>
+        </div>
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+          <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Erythema</p>
+          <p className="text-xs font-black text-emerald-800 mt-0.5">Grade 0.04 (Low)</p>
+        </div>
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+          <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Roughness (Ra)</p>
+          <p className="text-xs font-black text-sky-800 mt-0.5">12.4 μm</p>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
 
 function FeatureCard({ icon: Icon, title, description, color }) {
   return (
-    <div className="glass-card" style={{ padding: '40px', display: 'flex', flexDirection: 'column', gap: '24px', background: 'rgba(255, 255, 255, 0.85)', cursor: 'pointer' }}>
-      <div className="feature-icon-wrapper" style={{ position: 'relative', width: '64px', height: '64px', borderRadius: '20px', background: `linear-gradient(135deg, rgba(${color}, 0.15), rgba(${color}, 0.05))`, border: `1px solid rgba(${color}, 0.2)`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `inset 0 2px 4px rgba(255,255,255,0.5), 0 8px 16px rgba(${color}, 0.15)`, zIndex: 1 }}>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: `radial-gradient(circle at top left, rgba(255,255,255,0.8), transparent)`, borderRadius: '20px', pointerEvents: 'none' }} />
-        <Icon size={32} style={{ color: `rgb(${color})`, filter: `drop-shadow(0 4px 8px rgba(${color},0.4))` }} />
+    <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs hover:shadow-md hover:border-teal-300 transition-all flex flex-col justify-between">
+      <div>
+        <div 
+          className="w-12 h-12 rounded-xl flex items-center justify-center mb-5"
+          style={{ background: `${color}14`, border: `1px solid ${color}35` }}
+        >
+          <Icon size={22} style={{ color }} />
+        </div>
+        <h3 className="text-base font-bold text-slate-900 mb-2">{title}</h3>
+        <p className="text-sm text-slate-600 leading-relaxed mb-4">{description}</p>
       </div>
-      <div style={{ zIndex: 1 }}>
-        <h3 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '12px', letterSpacing: '-0.01em' }}>{title}</h3>
-        <p style={{ color: 'var(--text-muted)', lineHeight: 1.7, fontSize: '1.05rem', fontWeight: 400 }}>{description}</p>
+      <div className="pt-3 border-t border-slate-100 flex items-center gap-1.5 text-xs font-bold" style={{ color }}>
+        <span>Standardized Clinical Method</span>
+        <CheckCircle2 size={14} />
       </div>
     </div>
   );
 }
 
-function FeaturesSection() {
+function StepCard({ num, title, desc }) {
   return (
-    <section className="container" style={{ padding: '100px 24px', position: 'relative', overflow: 'hidden' }}>
-      
-      {/* Custom Healthcare Background Pattern */}
-      <div style={{ position: 'absolute', top: '0', left: '-20%', right: '-20%', bottom: '0', backgroundImage: 'url("/pattern.png")', backgroundSize: '300px', backgroundRepeat: 'repeat', opacity: 0.5, mixBlendMode: 'multiply', zIndex: 0, pointerEvents: 'none', WebkitMaskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 75%)', maskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 75%)' }} />
-
-      {/* Decorative Corner Stickers */}
-      <div className="animate-float responsive-sticker-1" style={{ position: 'absolute', top: '40px', left: '40px', background: 'white', padding: '16px', borderRadius: '24px', boxShadow: '0 12px 30px rgba(0,184,212,0.15)', animationDelay: '0.2s', transform: 'rotate(-12deg)', zIndex: 10 }}>
-         <Sparkles size={28} color="var(--primary-cyan)" />
+    <div className="flex gap-4 items-start bg-white border border-slate-200/90 p-6 rounded-2xl shadow-xs">
+      <div 
+        className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0 shadow-md"
+        style={{ background: 'linear-gradient(135deg, #0d9488, #059669)' }}
+      >
+        {num}
       </div>
-      <div className="animate-float responsive-sticker-2" style={{ position: 'absolute', top: '80px', right: '60px', background: 'white', padding: '14px', borderRadius: '50%', boxShadow: '0 12px 30px rgba(255,109,0,0.15)', animationDelay: '1.4s', transform: 'rotate(15deg)', zIndex: 10 }}>
-         <Sun size={26} color="var(--accent-orange)" />
+      <div>
+        <p className="font-bold text-slate-900 text-base mb-1">{title}</p>
+        <p className="text-sm text-slate-600 leading-relaxed">{desc}</p>
       </div>
-      <div className="animate-float responsive-sticker-3" style={{ position: 'absolute', bottom: '160px', left: '60px', background: 'white', padding: '18px', borderRadius: '20px', boxShadow: '0 12px 30px rgba(0,200,83,0.15)', animationDelay: '0.8s', transform: 'rotate(-5deg)', zIndex: 10 }}>
-         <Flower2 size={30} color="var(--accent-emerald)" />
-      </div>
-      <div className="animate-float responsive-sticker-4" style={{ position: 'absolute', bottom: '80px', right: '40px', background: 'white', padding: '14px', borderRadius: '24px', boxShadow: '0 12px 30px rgba(112,0,255,0.15)', animationDelay: '1.8s', transform: 'rotate(10deg)', zIndex: 10 }}>
-         <Brain size={28} color="var(--primary-royal-purple)" />
-      </div>
-
-      <div style={{ textAlign: 'center', marginBottom: '80px', position: 'relative', zIndex: 2 }}>
-        <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', marginBottom: '16px' }}>Clinical Intelligence <span className="text-gradient-primary">in Your Pocket</span></h2>
-        <p style={{ color: 'var(--text-muted)', fontSize: 'clamp(1rem, 3vw, 1.2rem)', maxWidth: '600px', margin: '0 auto' }}>
-          Powered by state-of-the-art CNN models and predictive analytics.
-        </p>
-      </div>
-
-      {/* Asymmetric / Staggered Grid for modern feel */}
-      <div className="responsive-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', maxWidth: '1000px', margin: '0 auto' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '30px', marginTop: '40px' }}>
-          <FeatureCard 
-            icon={ActivitySquare} 
-            title="Acne AI Scan" 
-            description="Real-time detection of blackheads, whiteheads, and cystic acne severity with medical-grade precision."
-            color="255, 109, 0"
-          />
-          <div className="glass-card" style={{ padding: '48px 40px', background: 'linear-gradient(135deg, #0A0F2C 0%, #1A1A24 100%)', color: 'white', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative', overflow: 'hidden', cursor: 'pointer', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
-            <div style={{ position: 'absolute', top: '-50%', right: '-50%', width: '100%', height: '100%', background: 'radial-gradient(circle, rgba(112,0,255,0.4) 0%, transparent 70%)', filter: 'blur(40px)', zIndex: 0 }} />
-            <div style={{ position: 'absolute', bottom: '-50%', left: '-50%', width: '100%', height: '100%', background: 'radial-gradient(circle, rgba(0,184,212,0.3) 0%, transparent 70%)', filter: 'blur(40px)', zIndex: 0 }} />
-            
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 12px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '100px', marginBottom: '24px', backdropFilter: 'blur(10px)' }}>
-                <Sparkles size={14} color="var(--primary-cyan)" />
-                <span style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600, color: 'var(--primary-cyan)' }}>Clinical Grade</span>
-              </div>
-              <h3 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 800, marginBottom: '16px', color: 'white', letterSpacing: '-0.03em', background: 'linear-gradient(135deg, #FFFFFF 0%, #B0B0D0 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>99.8%<span style={{ fontSize: 'clamp(1rem, 3vw, 1.5rem)', fontWeight: 500, opacity: 0.8, WebkitTextFillColor: 'rgba(255,255,255,0.8)' }}> Confidence</span></h3>
-              <p style={{ color: 'rgba(255,255,255,0.7)', lineHeight: 1.7, fontSize: '1.1rem', fontWeight: 400 }}>Trained on over 2 million clinical dermatology images worldwide for unparalleled precision.</p>
-            </div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-          <FeatureCard 
-            icon={Droplets} 
-            title="Hydration Tracking" 
-            description="Correlate your lifestyle, sleep, and water intake with your skin's moisture barrier performance."
-            color="0, 200, 83"
-          />
-          <FeatureCard 
-            icon={Wind} 
-            title="Hair & Scalp Analysis" 
-            description="Track hair density, detect early signs of thinning, and monitor overall scalp health dynamically."
-            color="0, 184, 212"
-          />
-        </div>
-      </div>
-    </section>
+    </div>
   );
 }
 
-function LandingPage({ user }) {
+export default function LandingPage() {
   const navigate = useNavigate();
+
   return (
-    <div style={{ overflowX: 'hidden' }}>
-      <nav className="responsive-nav" style={{ position: 'fixed', top: '24px', left: '50%', transform: 'translateX(-50%)', width: '90%', maxWidth: '900px', padding: '16px 32px', zIndex: 100, background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(24px)', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 12px 40px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
-          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'linear-gradient(135deg, var(--primary-electric-blue), var(--primary-royal-purple))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Brain size={18} color="white" />
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between">
+
+      {/* Top Navbar */}
+      <header className="w-full px-4 sm:px-8 py-5">
+        <div className="max-w-6xl mx-auto flex justify-between items-center bg-white border border-slate-200 rounded-2xl px-5 sm:px-7 py-3.5 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div 
+              className="w-9 h-9 rounded-xl flex items-center justify-center shadow-md"
+              style={{ background: 'linear-gradient(135deg, #0d9488, #059669)' }}
+            >
+              <Brain size={18} className="text-white" />
+            </div>
+            <div>
+              <span className="font-extrabold text-lg text-slate-900 tracking-tight">
+                DermaSense<span className="text-teal-700">AI</span>
+              </span>
+              <span className="hidden sm:inline-block ml-2 px-2 py-0.5 text-[10px] font-bold bg-teal-50 text-teal-800 border border-teal-200 rounded-md uppercase">
+                Clinical Dermatology Edition
+              </span>
+            </div>
           </div>
-          <span style={{ fontSize: '1.2rem', fontWeight: 700, letterSpacing: '-0.5px', color: 'var(--text-main)' }}>DermaSense<span style={{ color: 'var(--primary-cyan)' }}>AI</span></span>
+
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="hidden md:flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-bold text-slate-600 hover:text-teal-800 rounded-xl transition-colors cursor-pointer"
+            >
+              <LayoutDashboard size={15} /> Clinical Report
+            </button>
+            <button
+              onClick={() => navigate('/progress')}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-bold text-slate-600 hover:text-teal-800 rounded-xl transition-colors cursor-pointer"
+            >
+              <Activity size={15} /> Longitudinal Log
+            </button>
+            <button
+              onClick={() => navigate('/facescan')}
+              className="px-5 py-2.5 text-sm font-bold text-white rounded-xl shadow-md transition-all hover:opacity-95 hover:shadow-lg flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap"
+              style={{ background: 'linear-gradient(135deg, #0d9488, #059669)' }}
+            >
+              <Camera size={16} /> Clinical Scan
+            </button>
+          </div>
         </div>
-        
-        <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
-          <a href="#" style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-muted)', transition: 'color 0.2s' }} onMouseOver={e=>e.target.style.color='var(--primary-royal-purple)'} onMouseOut={e=>e.target.style.color='var(--text-muted)'}>Clinical Science</a>
-          <a href="#" style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-muted)', transition: 'color 0.2s' }} onMouseOver={e=>e.target.style.color='var(--primary-royal-purple)'} onMouseOut={e=>e.target.style.color='var(--text-muted)'}>Real Results</a>
+      </header>
+
+      {/* Hero Section */}
+      <main className="max-w-6xl mx-auto w-full px-4 sm:px-8 pt-8 pb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-start">
           
-          {user ? (
-              <>
-                <button onClick={() => { signOut(auth); navigate('/login'); }} style={{ padding: '10px 20px', background: 'transparent', border: '1px solid var(--glass-border)', color: 'var(--text-muted)', borderRadius: '100px', cursor: 'pointer', fontWeight: 600 }}>Sign Out</button>
-                <button className="btn-primary" style={{ padding: '10px 28px', fontSize: '0.95rem', borderRadius: '100px' }} onClick={() => navigate('/dashboard')}>Go to Dashboard</button>
-              </>
-          ) : (
-              <button className="btn-primary" style={{ padding: '10px 28px', fontSize: '0.95rem', borderRadius: '100px' }} onClick={() => navigate('/login')}>Access App</button>
-          )}
-        </div>
-      </nav>
+          {/* Left Column: Heading and CTAs */}
+          <div className="lg:col-span-7 text-left">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-teal-50 border border-teal-200 rounded-full text-xs font-bold text-teal-900 tracking-wide uppercase mb-6 shadow-xs">
+              <Activity size={13} className="text-teal-700" />
+              <span>Quantitative Computer Vision Dermatology · 13 Bio-Markers</span>
+            </div>
 
-      <main style={{ paddingTop: '40px' }}>
-        <HeroSection onStartScan={() => navigate('/login')} />
-        <FeaturesSection />
-        
-        {/* Comprehensive Footer */}
-        <footer className="responsive-padding" style={{ background: 'var(--footer-bg)', padding: '60px 5%', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
-          <div className="responsive-footer" style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '40px' }}>
-            
-            {/* Brand & Copyright */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--brand-maroon)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Brain size={24} color="white" />
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 leading-[1.15] mb-6 tracking-tight">
+              Evidence-Based Skin Diagnostics <br />
+              Quantifying
+              <AnimatedWord />
+            </h1>
+
+            <p className="text-base sm:text-lg text-slate-600 leading-relaxed mb-8 max-w-xl">
+              Objective 478-point facial anatomical alignment, pixel-level OpenCV colorimetric and spatial texture analysis, and evidence-based therapeutic recommendations — fully executed with medical standardization.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-10">
+              <button
+                onClick={() => navigate('/facescan')}
+                className="px-8 py-4 rounded-2xl text-white font-bold text-base flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                style={{ background: 'linear-gradient(135deg, #0d9488, #059669, #0284c7)' }}
+              >
+                <Camera size={20} />
+                <span>Begin Face Examination</span>
+                <ArrowRight size={18} />
+              </button>
+              
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="px-6 py-4 rounded-2xl text-slate-700 font-bold text-base border border-slate-300 bg-white hover:bg-slate-50 flex items-center justify-center gap-2 shadow-xs transition-all hover:border-slate-400 cursor-pointer"
+              >
+                <LayoutDashboard size={18} className="text-teal-700" />
+                <span>View Sample Report</span>
+              </button>
+            </div>
+
+            {/* Quick Stat Badges */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-slate-200">
+              {[
+                { value: '478', label: 'Anatomical Nodes' },
+                { value: '13', label: 'Bio-Markers' },
+                { value: 'D65', label: 'Illumination Standard' },
+                { value: '98.4%', label: 'Alignment Fidelity' },
+              ].map(({ value, label }) => (
+                <div key={label}>
+                  <p className="text-2xl font-black text-teal-800">{value}</p>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mt-0.5">{label}</p>
                 </div>
-                <span style={{ fontSize: '1.8rem', fontWeight: 700, letterSpacing: '-0.5px', color: 'var(--text-main)' }}>DermaSense<span style={{ color: 'var(--brand-maroon)' }}>AI</span></span>
-              </div>
-              <p style={{ color: 'var(--text-muted)', fontSize: '1.05rem', fontWeight: 500 }}>Clinical-grade AI for comprehensive skin and hair analysis.</p>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '40px' }}>© Fontus Health Ltd. 2026. All rights reserved.</p>
+              ))}
             </div>
-
-            {/* Navigation Links */}
-            <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
-              <a className="footer-link">Terms and Conditions</a>
-              <a className="footer-link">Privacy Policy</a>
-              <a className="footer-link">Cookies</a>
-              <a className="footer-link">Contact Us</a>
-            </div>
-
-            {/* Social & Store Links */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'flex-end' }}>
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <a className="social-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-                </a>
-                <a className="social-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg>
-                </a>
-                <a className="social-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
-                </a>
-              </div>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <a className="store-btn" style={{ padding: '6px 12px' }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                     {/* Simplified icon for footer */}
-                     <path d="M2 2v20l17-10L2 2z" />
-                  </svg>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                    <span style={{ fontSize: '0.55rem', textTransform: 'uppercase', opacity: 0.8 }}>Get it on</span>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 600, lineHeight: 1 }}>Google Play</span>
-                  </div>
-                </a>
-                <a className="store-btn" style={{ padding: '6px 12px' }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    {/* Simplified icon for footer */}
-                    <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm3.636 14.182c-1.002 0-2.008-.43-2.656-.43-.655 0-1.637.41-2.583.41-1.326 0-2.553-.787-3.236-2.008-1.428-2.518-1.22-6.28.163-8.71 .66-1.144 1.83-1.88 3.09-1.88 1.293 0 2.296.84 2.943.84.664 0 1.802-.857 3.235-.857 1.353 0 2.428.536 3.12 1.554-2.735 1.633-2.288 5.633.454 6.776-.64 1.614-1.424 2.87-2.53 4.305zm-.848-8.835c-.47 1.15-1.748 1.942-3.003 1.825.263-1.385 1.054-2.656 2.17-3.414.502-.34 1.1-.564 1.706-.628-.158 1.01-.587 1.624-.873 2.217z"/>
-                  </svg>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                    <span style={{ fontSize: '0.55rem', textTransform: 'uppercase', opacity: 0.8 }}>Download on the</span>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 600, lineHeight: 1 }}>App Store</span>
-                  </div>
-                </a>
-              </div>
-            </div>
-
           </div>
-        </footer>
 
+          {/* Right Column: Realistic Clinical Complexion Analysis Card */}
+          <div className="lg:col-span-5 w-full flex justify-center">
+            <ClinicalPreviewCard />
+          </div>
+        </div>
+
+        {/* Bio-Marker Evaluation Section */}
+        <section className="mt-24 pt-12 border-t border-slate-200">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <span className="text-xs font-black uppercase tracking-widest text-teal-700 mb-2 block">
+              Dermatological Methodology
+            </span>
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+              Objective Bio-Marker Evaluation
+            </h2>
+            <p className="text-sm text-slate-600 mt-2">
+              Our OpenCV and multispectral imaging pipeline measures skin parameters across discrete anatomical facial zones.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <FeatureCard 
+              icon={Activity} 
+              title="Follicular Inflammation & Erythema" 
+              description="Isolates capillary dilation, papules, and localized inflammation using HSV chrominance thresholding and spatial density metrics."
+              color="#e11d48" 
+            />
+            <FeatureCard 
+              icon={Droplets} 
+              title="Stratum Corneum Hydration" 
+              description="Evaluates cheek and forehead specular reflection variance to calculate epidermal water binding and barrier competence."
+              color="#0d9488" 
+            />
+            <FeatureCard 
+              icon={Wind} 
+              title="Epidermal Micro-Roughness (Ra)" 
+              description="High-frequency Laplacian spatial dispersion measures follicular aperture dilation, fine lines, and skin surface uniformity."
+              color="#0284c7" 
+            />
+            <FeatureCard 
+              icon={Eye} 
+              title="Infraorbital Dyschromia" 
+              description="Measures periorbital luminance contrast in CIELAB color space to quantify under-eye melanin concentration and micro-circulation."
+              color="#7c3aed" 
+            />
+            <FeatureCard 
+              icon={Shield} 
+              title="Cutaneous Lipid Barrier" 
+              description="Evaluates epidermal lipid balance and sebum excretion rate across T-zone and U-zone facial regions."
+              color="#059669" 
+            />
+            <FeatureCard 
+              icon={Zap} 
+              title="Standardized Pose Normalization" 
+              description="MediaPipe 478-point cranial alignment guarantees strict lighting standardization and angle normalization across all photographic records."
+              color="#d97706" 
+            />
+          </div>
+        </section>
+
+        {/* 3-Step Clinical Workflow */}
+        <section className="mt-24 bg-white border border-slate-200/90 rounded-3xl p-8 sm:p-12 shadow-sm">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-10">
+              <span className="text-xs font-black uppercase tracking-widest text-teal-700 mb-2 block">
+                Clinical Workflow
+              </span>
+              <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+                Standardized Three-Step Diagnostic Protocol
+              </h2>
+            </div>
+
+            <div className="flex flex-col gap-5">
+              <StepCard 
+                num={1} 
+                title="Standardized Multi-Angle Photographic Acquisition" 
+                desc="Camera guides patient through Frontal, Left Oblique (45°), Right Oblique (45°), and Superior angles with real-time pose validation." 
+              />
+              <StepCard 
+                num={2} 
+                title="Automated Bio-Marker & Spatial Extraction" 
+                desc="OpenCV colorimetric filters and MediaPipe landmarks segment anatomical zones (malar, frontal, nasal, mental) and extract 13 clinical parameters." 
+              />
+              <StepCard 
+                num={3} 
+                title="Comprehensive Diagnostic Dossier & Therapeutic Regimen" 
+                desc="Inspect multispectral cross-polarized and UV filters, examine objective lesion coordinates, and review evidence-based skincare formulations." 
+              />
+            </div>
+
+            <div className="mt-10 text-center">
+              <button
+                onClick={() => navigate('/facescan')}
+                className="px-9 py-4 rounded-2xl text-white font-bold text-base shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] inline-flex items-center gap-2 cursor-pointer"
+                style={{ background: 'linear-gradient(135deg, #0d9488, #059669)' }}
+              >
+                <Camera size={18} />
+                <span>Launch Camera & Begin Protocol</span>
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          </div>
+        </section>
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-slate-200 bg-white py-8 px-4 sm:px-8 mt-16 text-center">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2.5">
+            <div 
+              className="w-7 h-7 rounded-lg flex items-center justify-center shadow-xs"
+              style={{ background: 'linear-gradient(135deg, #0d9488, #059669)' }}
+            >
+              <Brain size={14} className="text-white" />
+            </div>
+            <span className="font-extrabold text-sm text-slate-900">
+              DermaSense<span className="text-teal-700">AI</span>
+            </span>
+          </div>
+
+          <p className="text-xs text-slate-500 font-medium">
+            Quantitative Computer Vision Dermatology · MediaPipe 478 Anatomical Mesh · OpenCV Colorimetric Heuristics · Research & Clinical Edition
+          </p>
+
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="text-xs font-bold text-teal-800 hover:text-teal-900 transition-colors cursor-pointer"
+          >
+            Top ↑
+          </button>
+        </div>
+      </footer>
+
     </div>
   );
 }
-
-export default LandingPage;
